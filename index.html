@@ -987,59 +987,124 @@
         }
 
         function saveCurrentToHistory() {
-            calculateReport();
-            const history = getHistory();
-            
-            const totalLost = (
-                parseFloat(getTxt('b1_mud')) +
-                parseFloat(getTxt('b2_mud')) +
-                parseFloat(getTxt('b3_mud')) +
-                parseFloat(getTxt('b4_mud'))
-            ).toFixed(1);
+    calculateReport();
+    const history = getHistory();
+    
+    const totalLost = (
+        parseFloat(getTxt('b1_mud') || 0) +
+        parseFloat(getTxt('b2_mud') || 0) +
+        parseFloat(getTxt('b3_mud') || 0) +
+        parseFloat(getTxt('b4_mud') || 0)
+    ).toFixed(1);
 
-            const record = {
-                date: getVal('date'),
-                reportNum: getVal('report_num'),
-                operator: getVal('operator'),
-                totalMudLost: totalLost,
-                oilDensity: getVal('oil_density'),
-                hgsDensity: getVal('hgs_density'),
-                lgsDensity: getVal('lgs_density'),
-                brineCorr: getVal('brine_corr'),
-                brineDensity: getVal('brine_density'),
-                oilFractionOwr: getVal('oil_fraction_owr'),
-                
-                c1_hours: getVal('c1_hours'), c2_hours: getVal('c2_hours'), c3_hours: getVal('c3_hours'), c4_hours: getVal('c4_hours'),
-                c1_f_gpm: getVal('c1_f_gpm'), c1_c_gpm: getVal('c1_c_gpm'),
-                c2_f_gpm: getVal('c2_f_gpm'), c2_c_gpm: getVal('c2_c_gpm'),
-                c3_f_gpm: getVal('c3_f_gpm'), c3_c_gpm: getVal('c3_c_gpm'),
-                c4_f_gpm: getVal('c4_f_gpm'), c4_c_gpm: getVal('c4_c_gpm'),
+    const record = {
+        date: getVal('date'),
+        reportNum: getVal('report_num'),
+        operator: getVal('operator'),
 
-                c1_f_pcf: getVal('c1_f_pcf'), c1_c_pcf: getVal('c1_c_pcf'), c1_d_pcf: getVal('c1_d_pcf'),
-                c2_f_pcf: getVal('c2_f_pcf'), c2_c_pcf: getVal('c2_c_pcf'), c2_d_pcf: getVal('c2_d_pcf'),
-                c3_f_pcf: getVal('c3_f_pcf'), c3_c_pcf: getVal('c3_c_pcf'), c3_d_pcf: getVal('c3_d_pcf'),
-                c4_f_pcf: getVal('c4_f_pcf'), c4_c_pcf: getVal('c4_c_pcf'), c4_d_pcf: getVal('c4_d_pcf'),
+        // ====================== CENTRIFUGE 1 ======================
+        c1_equipment: "Centrifuge 1",
+        c1_mode: getVal('c1_mode'),
+        c1_fluidType: getVal('c1_fluid'),
+        c1_mudWtIn: getVal('c1_f_pcf'),
+        c1_mudWtOut: getVal('c1_c_pcf'),
+        c1_bariteDiscardWt: getVal('c1_d_pcf'),
+        c1_operatingHrs: getVal('c1_hours'),
+        c1_volProcessed: getTxt('c1_f_vol'),
+        c1_centrateRecovered: getTxt('c1_c_vol'),
+        c1_bariteDiscard: getTxt('c1_d_vol'),
+        c1_lgsPctIn: getTxt('p1_c1_f_lgs_pct'),
+        c1_lgsPctOut: getTxt('p1_c1_c_lgs_pct'),
+        c1_lgsPctRec: getTxt('p1_c1_d_lgs_pct'),
+        c1_lgsPpbIn: getTxt('p1_c1_f_lgs'),
+        c1_lgsPpbOut: getTxt('p1_c1_c_lgs'),
+        c1_hgsPctIn: getTxt('p1_c1_f_hgs_pct'),
+        c1_hgsPctOut: getTxt('p1_c1_c_hgs_pct'),
+        c1_hgsPctRec: getTxt('p1_c1_d_hgs_pct'),
+        c1_hgsPpbIn: getTxt('main_c1_f_hgs'),
+        c1_hgsPpbOut: getTxt('main_c1_c_hgs'),
+        c1_totalVolDiscarded: totalLost,
+        c1_totalOilDiscarded: getTxt('b1_oil'),
+        c1_totalWaterDiscarded: getTxt('b1_water'),
+        c1_totalSolidsDiscarded: getTxt('b1_sol'),
+        c1_skipsFilled: getTxt('b1_skips_out'),
 
-                c1_f_oil: getVal('c1_f_oil'), c1_c_oil: getVal('c1_c_oil'), c1_d_oil: getVal('c1_d_oil'),
-                c2_f_oil: getVal('c2_f_oil'), c2_c_oil: getVal('c2_c_oil'), c2_d_oil: getVal('c2_d_oil'),
-                c3_f_oil: getVal('c3_f_oil'), c3_c_oil: getVal('c3_c_oil'), c3_d_oil: getVal('c3_d_oil'),
-                c4_f_oil: getVal('c4_f_oil'), c4_c_oil: getVal('c4_c_oil'), c4_d_oil: getVal('c4_d_oil'),
+        // ====================== CENTRIFUGE 2 ======================
+        c2_equipment: "Centrifuge 2",
+        c2_mode: getVal('c2_mode'),
+        c2_fluidType: getVal('c2_fluid'),
+        c2_mudWtIn: getVal('c2_f_pcf'),
+        c2_mudWtOut: getVal('c2_c_pcf'),
+        c2_bariteDiscardWt: getVal('c2_d_pcf'),
+        c2_operatingHrs: getVal('c2_hours'),
+        c2_volProcessed: getTxt('c2_f_vol'),
+        c2_centrateRecovered: getTxt('c2_c_vol'),
+        c2_bariteDiscard: getTxt('c2_d_vol'),
+        c2_lgsPctIn: getTxt('p1_c2_f_lgs_pct'),
+        c2_lgsPctOut: getTxt('p1_c2_c_lgs_pct'),
+        c2_lgsPctRec: getTxt('p1_c2_d_lgs_pct'),
+        c2_lgsPpbIn: getTxt('p1_c2_f_lgs'),
+        c2_lgsPpbOut: getTxt('p1_c2_c_lgs'),
+        c2_hgsPctIn: getTxt('p1_c2_f_hgs_pct'),
+        c2_hgsPctOut: getTxt('p1_c2_c_hgs_pct'),
+        c2_hgsPctRec: getTxt('p1_c2_d_hgs_pct'),
+        c2_hgsPpbIn: getTxt('main_c2_f_hgs'),
+        c2_hgsPpbOut: getTxt('main_c2_c_hgs'),
 
-                c1_f_water: getVal('c1_f_water'), c1_c_water: getVal('c1_c_water'), c1_d_water: getVal('c1_d_water'),
-                c2_f_water: getVal('c2_f_water'), c2_c_water: getVal('c2_c_water'), c2_d_water: getVal('c2_d_water'),
-                c3_f_water: getVal('c3_f_water'), c3_c_water: getVal('c3_c_water'), c3_d_water: getVal('c3_d_water'),
-                c4_f_water: getVal('c4_f_water'), c4_c_water: getVal('c4_c_water'), c4_d_water: getVal('c4_d_water'),
+        // ====================== CENTRIFUGE 3 ======================
+        c3_equipment: "Centrifuge 3",
+        c3_mode: getVal('c3_mode'),
+        c3_fluidType: getVal('c3_fluid'),
+        c3_mudWtIn: getVal('c3_f_pcf'),
+        c3_mudWtOut: getVal('c3_c_pcf'),
+        c3_bariteDiscardWt: getVal('c3_d_pcf'),
+        c3_operatingHrs: getVal('c3_hours'),
+        c3_volProcessed: getTxt('c3_f_vol'),
+        c3_centrateRecovered: getTxt('c3_c_vol'),
+        c3_bariteDiscard: getTxt('c3_d_vol'),
+        c3_lgsPctIn: getTxt('p1_c3_f_lgs_pct'),
+        c3_lgsPctOut: getTxt('p1_c3_c_lgs_pct'),
+        c3_lgsPctRec: getTxt('p1_c3_d_lgs_pct'),
+        c3_lgsPpbIn: getTxt('p1_c3_f_lgs'),
+        c3_lgsPpbOut: getTxt('p1_c3_c_lgs'),
+        c3_hgsPctIn: getTxt('p1_c3_f_hgs_pct'),
+        c3_hgsPctOut: getTxt('p1_c3_c_hgs_pct'),
+        c3_hgsPctRec: getTxt('p1_c3_d_hgs_pct'),
+        c3_hgsPpbIn: getTxt('main_c3_f_hgs'),
+        c3_hgsPpbOut: getTxt('main_c3_c_hgs'),
 
-                c1_d_gpm: getTxt('c1_gpm'), c2_d_gpm: getTxt('c2_gpm'), c3_d_gpm: getTxt('c3_gpm'), c4_d_gpm: getTxt('c4_gpm'),
-                comments: getVal('comments')
-            };
+        // ====================== CENTRIFUGE 4 ======================
+        c4_equipment: "Centrifuge 4",
+        c4_mode: getVal('c4_mode'),
+        c4_fluidType: getVal('c4_fluid'),
+        c4_mudWtIn: getVal('c4_f_pcf'),
+        c4_mudWtOut: getVal('c4_c_pcf'),
+        c4_bariteDiscardWt: getVal('c4_d_pcf'),
+        c4_operatingHrs: getVal('c4_hours'),
+        c4_volProcessed: getTxt('c4_f_vol'),
+        c4_centrateRecovered: getTxt('c4_c_vol'),
+        c4_bariteDiscard: getTxt('c4_d_vol'),
+        c4_lgsPctIn: getTxt('p1_c4_f_lgs_pct'),
+        c4_lgsPctOut: getTxt('p1_c4_c_lgs_pct'),
+        c4_lgsPctRec: getTxt('p1_c4_d_lgs_pct'),
+        c4_lgsPpbIn: getTxt('p1_c4_f_lgs'),
+        c4_lgsPpbOut: getTxt('p1_c4_c_lgs'),
+        c4_hgsPctIn: getTxt('p1_c4_f_hgs_pct'),
+        c4_hgsPctOut: getTxt('p1_c4_c_hgs_pct'),
+        c4_hgsPctRec: getTxt('p1_c4_d_hgs_pct'),
+        c4_hgsPpbIn: getTxt('main_c4_f_hgs'),
+        c4_hgsPpbOut: getTxt('main_c4_c_hgs'),
 
-            const cleanHistory = history.filter(item => !(item.date === record.date && item.reportNum === record.reportNum));
-            cleanHistory.unshift(record);
-            localStorage.setItem('solids_control_history', JSON.stringify(cleanHistory));
-            renderHistoryTable();
-            alert(`Report logged successfully under date: ${record.date}`);
-        }
+        comments: getVal('comments')
+    };
+
+    const cleanHistory = history.filter(item => !(item.date === record.date && item.reportNum === record.reportNum));
+    cleanHistory.unshift(record);
+    localStorage.setItem('solids_control_history', JSON.stringify(cleanHistory));
+    
+    renderHistoryTable();
+    alert(`✅ Report saved successfully!\nDate: ${record.date}\nAll data for Centrifuges 1, 2, 3 & 4 saved.`);
+}
 
         function loadHistoryRecord(index) {
             const history = getHistory();
@@ -1087,33 +1152,120 @@
             renderHistoryTable();
         }
 
-        function exportHistoricalExcel() {
-            const history = getHistory();
-            if(history.length === 0) {
-                alert("Archive contains no data matrix profiles to compute dynamic workbook profiles.");
-                return;
-            }
+function exportHistoricalExcel() {
+    const history = getHistory();
+    if (history.length === 0) {
+        alert("No data in archive yet. Please save reports first.");
+        return;
+    }
 
-            const matrixHeaders = [
-                ["SOLID CONTROL SYSTEM MASTER HISTORICAL TIME-SERIES LEDGER"],
-                [],
-                ["Date Logged", "Report Index", "Verified Engineer", "Aggregated Mud Loss (bbl)", "C1 Loss Rate (gpm)", "C2 Loss Rate (gpm)", "C3 Loss Rate (gpm)", "C4 Loss Rate (gpm)", "C1 Hours Running", "C2 Hours Running", "C3 Hours Running", "C4 Hours Running"]
-            ];
+    const wb = XLSX.utils.book_new();
 
-            history.forEach(item => {
-                matrixHeaders.push([
-                    item.date, item.reportNum, item.operator, item.totalMudLost,
-                    item.c1_d_gpm, item.c2_d_gpm, item.c3_d_gpm, item.c4_d_gpm,
-                    item.c1_hours, item.c2_hours, item.c3_hours, item.c4_hours
-                ]);
-            });
+    // ==================== DAILY LOGS - FULL DATA FOR ALL CENTRIFUGES ====================
+    const headers = [
+        "Date", "Report Number", "Operator",
+        // Centrifuge 1
+        "C1 Equipment", "C1 Mode", "C1 Fluid Type", "C1 Mud WT IN", "C1 Mud WT Out", "C1 Barite Discard WT",
+        "C1 Operating Hrs", "C1 Vol Processed", "C1 Centrate Recovered", "C1 Barite Discard",
+        "C1 LGS % In", "C1 LGS % Out", "C1 LGS % Rec", "C1 LGS PPB In", "C1 LGS PPB Out",
+        "C1 HGS % In", "C1 HGS % Out", "C1 HGS % Rec", "C1 HGS PPB In", "C1 HGS PPB Out",
+        // Centrifuge 2
+        "C2 Mode", "C2 Fluid Type", "C2 Mud WT IN", "C2 Mud WT Out", "C2 Barite Discard WT",
+        "C2 Operating Hrs", "C2 Vol Processed", "C2 Centrate Recovered", "C2 Barite Discard",
+        "C2 LGS % In", "C2 LGS % Out", "C2 LGS % Rec", "C2 LGS PPB In", "C2 LGS PPB Out",
+        "C2 HGS % In", "C2 HGS % Out", "C2 HGS % Rec", "C2 HGS PPB In", "C2 HGS PPB Out",
+        // Centrifuge 3
+        "C3 Mode", "C3 Fluid Type", "C3 Mud WT IN", "C3 Mud WT Out", "C3 Barite Discard WT",
+        "C3 Operating Hrs", "C3 Vol Processed", "C3 Centrate Recovered", "C3 Barite Discard",
+        // Centrifuge 4
+        "C4 Mode", "C4 Fluid Type", "C4 Mud WT IN", "C4 Mud WT Out", "C4 Barite Discard WT",
+        "C4 Operating Hrs", "C4 Vol Processed", "C4 Centrate Recovered", "C4 Barite Discard",
+        // Totals
+        "Total Vol Discarded", "Total Oil Discarded", "Total Water Discarded", "Total Solids Discarded", "Skips Filled"
+    ];
 
-            const ws = XLSX.utils.aoa_to_sheet(matrixHeaders);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Master History Matrix");
-            XLSX.writeFile(wb, `Master_Solids_Control_Timeline_Logs.xlsx`);
-        }
+    const dailyData = [headers];
 
+    history.forEach(item => {
+        dailyData.push([
+            item.date || "", item.reportNum || "", item.operator || "",
+            // C1
+            item.c1_equipment || "Centrifuge 1", item.c1_mode || "", item.c1_fluidType || "",
+            item.c1_mudWtIn || "", item.c1_mudWtOut || "", item.c1_bariteDiscardWt || "",
+            item.c1_operatingHrs || "", item.c1_volProcessed || "", item.c1_centrateRecovered || "", item.c1_bariteDiscard || "",
+            item.c1_lgsPctIn || "", item.c1_lgsPctOut || "", item.c1_lgsPctRec || "",
+            item.c1_lgsPpbIn || "", item.c1_lgsPpbOut || "",
+            item.c1_hgsPctIn || "", item.c1_hgsPctOut || "", item.c1_hgsPctRec || "",
+            item.c1_hgsPpbIn || "", item.c1_hgsPpbOut || "",
+            // C2
+            item.c2_mode || "", item.c2_fluidType || "", item.c2_mudWtIn || "", item.c2_mudWtOut || "", item.c2_bariteDiscardWt || "",
+            item.c2_operatingHrs || "", item.c2_volProcessed || "", item.c2_centrateRecovered || "", item.c2_bariteDiscard || "",
+            item.c2_lgsPctIn || "", item.c2_lgsPctOut || "", item.c2_lgsPctRec || "",
+            item.c2_lgsPpbIn || "", item.c2_lgsPpbOut || "",
+            item.c2_hgsPctIn || "", item.c2_hgsPctOut || "", item.c2_hgsPctRec || "",
+            item.c2_hgsPpbIn || "", item.c2_hgsPpbOut || "",
+            // C3
+            item.c3_mode || "", item.c3_fluidType || "", item.c3_mudWtIn || "", item.c3_mudWtOut || "", item.c3_bariteDiscardWt || "",
+            item.c3_operatingHrs || "", item.c3_volProcessed || "", item.c3_centrateRecovered || "", item.c3_bariteDiscard || "",
+            // C4
+            item.c4_mode || "", item.c4_fluidType || "", item.c4_mudWtIn || "", item.c4_mudWtOut || "", item.c4_bariteDiscardWt || "",
+            item.c4_operatingHrs || "", item.c4_volProcessed || "", item.c4_centrateRecovered || "", item.c4_bariteDiscard || "",
+            // Totals
+            item.c1_totalVolDiscarded || item.totalMudLost || "",
+            item.c1_totalOilDiscarded || "", item.c1_totalWaterDiscarded || "",
+            item.c1_totalSolidsDiscarded || "", item.c1_skipsFilled || ""
+        ]);
+    });
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dailyData), "Daily Logs - All Centrifuges");
+
+    // ==================== MONTHLY & YEARLY SUMMARY (Volume Totals) ====================
+    const monthlyData = [["Month", "Total Processed", "Total Recovered", "Total Discard"]];
+    const monthlyMap = {};
+
+    history.forEach(item => {
+        const month = item.date ? item.date.substring(3,10) : "Unknown";
+        if (!monthlyMap[month]) monthlyMap[month] = {proc:0, rec:0, disc:0};
+        monthlyMap[month].proc += parseFloat(item.c1_volProcessed || 0) + parseFloat(item.c2_volProcessed || 0) +
+                                  parseFloat(item.c3_volProcessed || 0) + parseFloat(item.c4_volProcessed || 0);
+        monthlyMap[month].rec += parseFloat(item.c1_centrateRecovered || 0) + parseFloat(item.c2_centrateRecovered || 0) +
+                                 parseFloat(item.c3_centrateRecovered || 0) + parseFloat(item.c4_centrateRecovered || 0);
+        monthlyMap[month].disc += parseFloat(item.c1_bariteDiscard || 0) + parseFloat(item.c2_bariteDiscard || 0) +
+                                  parseFloat(item.c3_bariteDiscard || 0) + parseFloat(item.c4_bariteDiscard || 0);
+    });
+
+    Object.keys(monthlyMap).sort().forEach(m => {
+        const d = monthlyMap[m];
+        monthlyData.push([m, d.proc.toFixed(1), d.rec.toFixed(1), d.disc.toFixed(1)]);
+    });
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(monthlyData), "Monthly Summary");
+
+    const yearlyData = [["Year", "Total Processed", "Total Recovered", "Total Discard"]];
+    const yearlyMap = {};
+
+    history.forEach(item => {
+        const year = item.date ? "20" + item.date.split('/')[2] : "Unknown";
+        if (!yearlyMap[year]) yearlyMap[year] = {proc:0, rec:0, disc:0};
+        yearlyMap[year].proc += parseFloat(item.c1_volProcessed || 0) + parseFloat(item.c2_volProcessed || 0) +
+                                parseFloat(item.c3_volProcessed || 0) + parseFloat(item.c4_volProcessed || 0);
+        yearlyMap[year].rec += parseFloat(item.c1_centrateRecovered || 0) + parseFloat(item.c2_centrateRecovered || 0) +
+                               parseFloat(item.c3_centrateRecovered || 0) + parseFloat(item.c4_centrateRecovered || 0);
+        yearlyMap[year].disc += parseFloat(item.c1_bariteDiscard || 0) + parseFloat(item.c2_bariteDiscard || 0) +
+                                parseFloat(item.c3_bariteDiscard || 0) + parseFloat(item.c4_bariteDiscard || 0);
+    });
+
+    Object.keys(yearlyMap).sort().forEach(y => {
+        const d = yearlyMap[y];
+        yearlyData.push([y, d.proc.toFixed(1), d.rec.toFixed(1), d.disc.toFixed(1)]);
+    });
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(yearlyData), "Yearly Summary");
+
+    XLSX.writeFile(wb, `Full_Centrifuge_Historical_Logs_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+    alert("✅ Full Historical Logs Exported Successfully!\n\nAll data for Centrifuges 1-4 + Monthly & Yearly summaries included.");
+}
         function gatherPage2OnlyDataset() {
             return [
                 ["HALLIBURTON BAROID - SOLIDS CONTROL DAILY REPORT (PAGE 2 ANALYTICS ONLY)"],
