@@ -38,6 +38,7 @@
         </div>
 
         <div class="mb-4">
+            <div class="table-header">General Data</div>
             <div class="grid grid-cols-3 gap-y-px bg-gray-300 border border-gray-300 text-[11px]">
                 <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Date (DD-MM-YYYY)</span><input type="text" id="date" value="15/Mar/25" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
                 <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Oil Density (SG)</span><input type="number" id="oil_density" value="0.84" step="0.01" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center" oninput="calculateReport()"></div>
@@ -564,8 +565,8 @@
             <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
                 <h2 class="text-lg font-bold text-red-700 uppercase tracking-tight">Solids Control Daily Report - Page 2 Final Analytics</h2>
                 <div class="space-x-1 flex items-center">
-                    <button onclick="exportCSV()" class="bg-gray-700 hover:bg-gray-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Export CSV</button>
-                    <button onclick="exportExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Export Excel</button>
+                    <button onclick="exportPage2CSV()" class="bg-gray-700 hover:bg-gray-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Export CSV</button>
+                    <button onclick="exportPage2Excel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Export Excel</button>
                     <button onclick="window.print()" class="bg-red-700 hover:bg-red-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Print / PDF</button>
                     <button onclick="closeFinalReportModal()" class="text-gray-500 hover:text-gray-800 text-xl font-bold cursor-pointer ml-2">&times;</button>
                 </div>
@@ -661,7 +662,7 @@
                             <td id="v_c1_f_wtr" class="p-1"></td><td id="v_c1_c_wtr" class="p-1"></td><td id="v_c1_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
                             <td id="v_c2_f_wtr" class="p-1"></td><td id="v_c2_c_wtr" class="p-1"></td><td id="v_c2_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">91%</td>
                             <td id="v_c3_f_wtr" class="p-1"></td><td id="v_c3_c_wtr" class="p-1"></td><td id="v_c3_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
-                            <td id="v_c4_f_wtr" class="p-1"></td><td id="v_c4_c_wtr" class="p-1"></td><td id="v_c4_d_wtr" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">90%</td>
+                            <td id="v_c4_f_wtr" class="p-1"></td><td id="w_c4_c_wtr" class="p-1"></td><td id="v_c4_d_wtr" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">90%</td>
                         </tr>
                         <tr class="border-b border-gray-200">
                             <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">LGS (gpm)</td>
@@ -757,7 +758,6 @@
     </div>
 
     <script>
-        // Defensive wrapper functions to fully prevent JavaScript execution crashes
         const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
         const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
         const getTxt = (id) => { const el = document.getElementById(id); return el ? el.innerText : "0"; };
@@ -1114,26 +1114,81 @@
             XLSX.writeFile(wb, `Master_Solids_Control_Timeline_Logs.xlsx`);
         }
 
+        function gatherPage2OnlyDataset() {
+            return [
+                ["HALLIBURTON BAROID - SOLIDS CONTROL DAILY REPORT (PAGE 2 ANALYTICS ONLY)"],
+                ["Date:", getVal('date'), "Report Number:", getVal('report_num')],
+                [],
+                ["SECTION 1: MASS BALANCE ANALYTICS"],
+                ["Centrifuge Index", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
+                ["Mode of Operation", getTxt('m2_c1_mode'), "", "", getTxt('m2_c2_mode'), "", "", getTxt('m2_c3_mode'), "", "", getTxt('m2_c4_mode'), "", ""],
+                ["Density (pcf)", getTxt('m2_c1_f_pcf'), getTxt('m2_c1_c_pcf'), getTxt('m2_c1_d_pcf'), getTxt('m2_c2_f_pcf'), getTxt('m2_c2_c_pcf'), getTxt('m2_c2_d_pcf'), getTxt('m2_c3_f_pcf'), getTxt('m2_c3_c_pcf'), getTxt('m2_c3_d_pcf'), getTxt('m2_c4_f_pcf'), getTxt('m2_c4_c_pcf'), getTxt('m2_c4_d_pcf')],
+                ["Fluid Vol. (bbl.)", getTxt('m2_c1_f_vol'), getTxt('m2_c1_c_vol'), getTxt('m2_c1_d_vol'), getTxt('m2_c2_f_vol'), getTxt('m2_c2_c_vol'), getTxt('m2_c2_d_vol'), getTxt('m2_c3_f_vol'), getTxt('m2_c3_c_vol'), getTxt('m2_c3_d_vol'), getTxt('m2_c4_f_vol'), getTxt('m2_c4_c_vol'), getTxt('m2_c4_d_vol')],
+                ["Total Solids (bbl.)", getTxt('m2_c1_f_ts'), getTxt('m2_c1_c_ts'), getTxt('m2_c1_d_ts'), getTxt('m2_c2_f_ts'), getTxt('m2_c2_c_ts'), getTxt('m2_c2_d_ts'), getTxt('m2_c3_f_ts'), getTxt('m2_c3_c_ts'), getTxt('m2_c3_d_ts'), getTxt('m2_c4_f_ts'), getTxt('m2_c4_c_ts'), getTxt('m2_c4_d_ts')],
+                ["LGS (bbl.)", getTxt('m2_c1_f_lgs'), getTxt('m2_c1_c_lgs'), getTxt('m2_c1_d_lgs'), getTxt('m2_c2_f_lgs'), getTxt('m2_c2_c_lgs'), getTxt('m2_c2_d_lgs'), getTxt('m2_c3_f_lgs'), getTxt('m2_c3_c_lgs'), getTxt('m2_c3_d_lgs'), getTxt('m2_c4_f_lgs'), getTxt('m2_c4_c_lgs'), getTxt('m2_c4_d_lgs')],
+                ["HGS (bbl.)", getTxt('m2_c1_f_hgs'), getTxt('m2_c1_c_hgs'), getTxt('m2_c1_d_hgs'), getTxt('m2_c2_f_hgs'), getTxt('m2_c2_c_hgs'), getTxt('m2_c2_d_hgs'), getTxt('m2_c3_f_hgs'), getTxt('m2_c3_c_hgs'), getTxt('m2_c3_d_hgs'), getTxt('m2_c4_f_hgs'), getTxt('m2_c4_c_hgs'), getTxt('m2_c4_d_hgs')],
+                [],
+                ["SECTION 2: FLOW METRICS BY VOLUME (gpm)"],
+                ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
+                ["Oil (gpm)", getTxt('v_c1_f_oil'), getTxt('v_c1_c_oil'), getTxt('v_c1_d_oil'), getTxt('v_c2_f_oil'), getTxt('v_c2_c_oil'), getTxt('v_c2_d_oil'), getTxt('v_c3_f_oil'), getTxt('v_c3_c_oil'), getTxt('v_c3_d_oil'), getTxt('v_c4_f_oil'), getTxt('v_c4_c_oil'), getTxt('v_c4_d_oil')],
+                ["Water (gpm)", getTxt('v_c1_f_wtr'), getTxt('v_c1_c_wtr'), getTxt('v_c1_d_wtr'), getTxt('v_c2_f_wtr'), getTxt('v_c2_c_wtr'), getTxt('v_c2_d_wtr'), getTxt('v_c3_f_wtr'), getTxt('v_c3_c_wtr'), getTxt('v_c3_d_wtr'), getTxt('v_c4_f_wtr'), getTxt('w_c4_c_wtr'), getTxt('v_c4_d_wtr')],
+                ["LGS (gpm)", getTxt('v_c1_f_lgs'), getTxt('v_c1_c_lgs'), getTxt('v_c1_d_lgs'), getTxt('v_c2_f_lgs'), getTxt('v_c2_c_lgs'), getTxt('v_c2_d_lgs'), getTxt('v_c3_f_lgs'), getTxt('v_c3_c_lgs'), getTxt('v_c3_d_lgs'), getTxt('v_c4_f_lgs'), getTxt('v_c4_c_lgs'), getTxt('v_c4_d_lgs')],
+                ["HGS (gpm)", getTxt('v_c1_f_hgs'), getTxt('v_c1_c_hgs'), getTxt('v_c1_d_hgs'), getTxt('v_c2_f_hgs'), getTxt('v_c2_c_hgs'), getTxt('v_c2_d_hgs'), getTxt('v_c3_f_hgs'), getTxt('v_c3_c_hgs'), getTxt('v_c3_d_hgs'), getTxt('v_c4_f_hgs'), getTxt('v_c4_c_hgs'), getTxt('v_c4_d_hgs')],
+                [],
+                ["SECTION 3: FLOW METRICS BY WEIGHT (kg/min)"],
+                ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
+                ["Oil (kg/min)", getTxt('w_c1_f_oil'), getTxt('w_c1_c_oil'), getTxt('w_c1_d_oil'), getTxt('w_c2_f_oil'), getTxt('w_c2_c_oil'), getTxt('w_c2_d_oil'), getTxt('w_c3_f_oil'), getTxt('w_c3_c_oil'), getTxt('w_c3_d_oil'), getTxt('w_c4_f_oil'), getTxt('w_c4_c_oil'), getTxt('w_c4_d_oil')],
+                ["Water (kg/min)", getTxt('w_c1_f_wtr'), getTxt('w_c1_c_wtr'), getTxt('w_c1_d_wtr'), getTxt('w_c2_f_wtr'), getTxt('w_c2_c_wtr'), getTxt('w_c2_d_wtr'), getTxt('w_c3_f_wtr'), getTxt('w_c3_c_wtr'), getTxt('w_c3_d_wtr'), getTxt('w_c4_f_wtr'), getTxt('w_c4_c_wtr'), getTxt('w_c4_d_wtr')],
+                ["LGS (kg/min)", getTxt('w_c1_f_lgs'), getTxt('w_c1_c_lgs'), getTxt('w_c1_d_lgs'), getTxt('w_c2_f_lgs'), getTxt('w_c2_c_lgs'), getTxt('w_c2_d_lgs'), getTxt('w_c3_f_lgs'), getTxt('w_c3_c_lgs'), getTxt('w_c3_d_lgs'), getTxt('w_c4_f_lgs'), getTxt('w_c4_c_lgs'), getTxt('w_c4_d_lgs')],
+                ["HGS (kg/min)", getTxt('w_c1_f_hgs'), getTxt('w_c1_c_hgs'), getTxt('w_c1_d_hgs'), getTxt('w_c2_f_hgs'), getTxt('w_c2_c_hgs'), getTxt('w_c2_d_hgs'), getTxt('w_c3_f_hgs'), getTxt('w_c3_c_hgs'), getTxt('w_c3_d_hgs'), getTxt('w_c4_f_hgs'), getTxt('w_c4_c_hgs'), getTxt('w_c4_d_hgs')],
+                [],
+                ["SECTION 4: SYSTEM EFFICIENCIES"],
+                ["Dual HGS Recovered %", getTxt('eff_dual_hgs'), "Dual LGS Discard %", getTxt('eff_dual_lgs')],
+                ["Individual HGS Recovered %", getTxt('eff_ind_hgs'), "Individual LGS Discard %", getTxt('eff_ind_lgs')],
+                ["Solids Removal Mode HGS Discard %", getTxt('sol_rem_hgs'), "Solids Removal Mode LGS Discard %", getTxt('sol_rem_lgs')]
+            ];
+        }
+
+        function exportPage2CSV() {
+            const data = gatherPage2OnlyDataset();
+            const csvString = "data:text/csv;charset=utf-8," + data.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", encodeURI(csvString));
+            dlAnchor.setAttribute("download", `Page2_Final_Analytics_Report_No_${getVal('report_num')}.csv`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function exportPage2Excel() {
+            const data = gatherPage2OnlyDataset();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, ws, "Page 2 Analytics Only");
+            XLSX.writeFile(workbook, `Page2_Final_Analytics_Report_No_${getVal('report_num')}.xlsx`);
+        }
+
+        /* RESTRUCTURED: GATHER COMPLETELY TARGETED FIRST PAGE ORIGINAL SHIFT PROFILE LOGS */
         function gatherDataset() {
             return [
-                ["HALLIBURTON - SOLIDS CONTROL DAILY REPORT (COMPLETE SYSTEM DATA)"],
+                ["HALLIBURTON BAROID - SOLIDS CONTROL DAILY REPORT (PAGE 1 OVERVIEW)"],
                 [],
-                ["SECTION 1: GENERAL DATA"],
+                ["1. GENERAL DATA"],
                 ["Date", getVal('date'), "Report Number", getVal('report_num')],
                 ["Centrifuge Operator", getVal('operator')],
                 ["Oil Density (SG)", getVal('oil_density'), "Brine Corr. Factor", getVal('brine_corr')],
                 ["HGS Density (SG)", getVal('hgs_density'), "LGS Density (SG)", getVal('lgs_density')],
                 ["Brine Density", getVal('brine_density'), "Oil Fraction of OWR", getVal('oil_fraction_owr')],
-                ["Water Density (SG)", getVal('water_density_static'), "Liquid Phase Density", getVal('liquid_density_static')],
+                ["Water Density (SG)", getTxt('water_density_static'), "Liquid Phase Density", getTxt('liquid_density_static')],
                 [],
-                ["SECTION 2: SHALE SHAKERS DATA"],
+                ["2. SHALE SHAKERS DATA"],
                 ["Equipment", "Model", "Equipment Number", "Op. Hours", "Mesh Size", "Vol Processed (bbl)", "Vol Recovered (bbl)", "Vol Discard (bbl)"],
                 ["Shaker 1", getVal('s1_model'), getVal('s1_eq'), getVal('s1_hours'), getVal('s1_mesh'), getVal('s1_vol_p'), getVal('s1_vol_r'), getVal('s1_vol_d')],
                 ["Shaker 2", getVal('s2_model'), getVal('s2_eq'), getVal('s2_hours'), getVal('s2_mesh'), getVal('s2_vol_p'), getVal('s2_vol_r'), getVal('s2_vol_d')],
                 ["Shaker 3", getVal('s3_model'), getVal('s3_eq'), getVal('s3_hours'), getVal('s3_mesh'), getVal('s3_vol_p'), getVal('s3_vol_r'), getVal('s3_vol_d')],
                 ["Shaker 4", getVal('s4_model'), getVal('s4_eq'), getVal('s4_hours'), getVal('s4_mesh'), getVal('s4_vol_p'), getVal('s4_vol_r'), getVal('s4_vol_d')],
                 [],
-                ["SECTION 3: CENTRIFUGES OPERATIONAL DATA (PAGE 1)"],
+                ["3. CENTRIFUGES OPERATIONAL DATA"],
                 ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
                 ["Model", getVal('c1_model'), "", "", getVal('c2_model'), "", "", getVal('c3_model'), "", "", getVal('c4_model'), "", ""],
                 ["Equipment Number", getVal('c1_eq'), "", "", getVal('c2_eq'), "", "", getVal('c3_eq'), "", "", getVal('c4_eq'), "", ""],
@@ -1148,45 +1203,34 @@
                 ["Vol Accounted (bbl)", getTxt('c1_f_vol'), getTxt('c1_c_vol'), getTxt('c1_d_vol'), getTxt('c2_f_vol'), getTxt('c2_c_vol'), getTxt('c2_d_vol'), getTxt('c3_f_vol'), getTxt('c3_c_vol'), getTxt('c3_d_vol'), getTxt('c4_f_vol'), getTxt('c4_c_vol'), getTxt('c4_d_vol')],
                 ["Skips Filled", getVal('c1_skips'), "", "", getVal('c2_skips'), "", "", getVal('c3_skips'), "", "", getVal('c4_skips'), "", ""],
                 [],
-                ["SECTION 4: RETORT DATA"],
+                ["4. RETORT DATA"],
                 ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
                 ["Retort Oil %", getVal('c1_f_oil'), getVal('c1_c_oil'), getVal('c1_d_oil'), getVal('c2_f_oil'), getVal('c2_c_oil'), getVal('c2_d_oil'), getVal('c3_f_oil'), getVal('c3_c_oil'), getVal('c3_d_oil'), getVal('c4_f_oil'), getVal('c4_c_oil'), getVal('c4_d_oil')],
                 ["Retort Water %", getVal('c1_f_water'), getVal('c1_c_water'), getVal('c1_d_water'), getVal('c2_f_water'), getVal('c2_c_water'), getVal('c2_d_water'), getVal('c3_f_water'), getVal('c3_c_water'), getVal('c3_d_water'), getVal('c4_f_water'), getVal('c4_c_water'), getVal('c4_d_water')],
                 ["Retort Solid %", getTxt('c1_f_sol'), getTxt('c1_c_sol'), getTxt('c1_d_sol'), getTxt('c2_f_sol'), getTxt('c2_c_sol'), getTxt('c2_d_sol'), getTxt('c3_f_sol'), getTxt('c3_c_sol'), getTxt('c3_d_sol'), getTxt('c4_f_sol'), getTxt('c4_c_sol'), getTxt('c4_d_sol')],
                 ["Oil Fraction OWR", getVal('c1_f_owr'), getVal('c1_c_owr'), getVal('c1_d_owr'), getVal('c2_f_owr'), getVal('c2_c_owr'), getVal('c2_d_owr'), getVal('c3_f_owr'), getVal('c3_c_owr'), getVal('c3_d_owr'), getVal('c4_f_owr'), getVal('c4_c_owr'), getVal('c4_d_owr')],
                 [],
-                ["SECTION 4B: SOLIDS MASTER ANALYSIS DATA"],
+                ["5. SOLIDS ANALYSIS DATA"],
+                ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
                 ["Corrected Solids %", getTxt('p1_c1_f_ts'), getTxt('p1_c1_c_ts'), getTxt('p1_c1_d_ts'), getTxt('p1_c2_f_ts'), getTxt('p1_c2_c_ts'), getTxt('p1_c2_d_ts'), getTxt('p1_c3_f_ts'), getTxt('p1_c3_c_ts'), getTxt('p1_c3_d_ts'), getTxt('p1_c4_f_ts'), getTxt('p1_c4_c_ts'), getTxt('p1_c4_d_ts')],
-                ["LGS Vol (ppb)", getTxt('p1_c1_f_lgs'), getTxt('p1_c1_c_lgs'), getTxt('p1_c1_d_lgs'), getTxt('p1_c2_f_lgs'), getTxt('p1_c2_c_lgs'), getTxt('p1_c2_d_lgs'), getTxt('p1_c3_f_lgs'), getTxt('p1_c3_c_lgs'), getTxt('p1_c3_d_lgs'), getTxt('p1_c4_f_lgs'), getTxt('p1_c4_c_lgs'), getTxt('p1_c4_d_lgs')],
-                ["HGS Vol (ppb)", getTxt('main_c1_f_hgs'), getTxt('main_c1_c_hgs'), getTxt('main_c1_d_hgs'), getTxt('main_c2_f_hgs'), getTxt('main_c2_c_hgs'), getTxt('main_c2_d_hgs'), getTxt('main_c3_f_hgs'), getTxt('main_c3_c_hgs'), getTxt('main_c3_d_hgs'), getTxt('main_c4_f_hgs'), getTxt('main_c4_c_hgs'), getTxt('main_c4_d_hgs')],
+                ["Avg. Spec Gravity (SG)", getTxt('p1_c1_f_sg'), getTxt('p1_c1_c_sg'), getTxt('p1_c1_d_sg'), getTxt('p1_c2_f_sg'), getTxt('p1_c2_c_sg'), getTxt('p1_c2_d_sg'), getTxt('p1_c3_f_sg'), getTxt('p1_c3_c_sg'), getTxt('p1_c3_d_sg'), getTxt('p1_c4_f_sg'), getTxt('p1_c4_c_sg'), getTxt('p1_c4_d_sg')],
+                ["LGS %", getTxt('p1_c1_f_lgs_pct'), getTxt('p1_c1_c_lgs_pct'), getTxt('p1_c1_d_lgs_pct'), getTxt('p1_c2_f_lgs_pct'), getTxt('p1_c2_c_lgs_pct'), getTxt('p1_c2_d_lgs_pct'), getTxt('p1_c3_f_lgs_pct'), getTxt('p1_c3_c_lgs_pct'), getTxt('p1_c3_d_lgs_pct'), getTxt('p1_c4_f_lgs_pct'), getTxt('p1_c4_c_lgs_pct'), getTxt('p1_c4_d_lgs_pct')],
+                ["LGS (ppb)", getTxt('p1_c1_f_lgs'), getTxt('p1_c1_c_lgs'), getTxt('p1_c1_d_lgs'), getTxt('p1_c2_f_lgs'), getTxt('p1_c2_c_lgs'), getTxt('p1_c2_d_lgs'), getTxt('p1_c3_f_lgs'), getTxt('p1_c3_c_lgs'), getTxt('p1_c3_d_lgs'), getTxt('p1_c4_f_lgs'), getTxt('p1_c4_c_lgs'), getTxt('p1_c4_d_lgs')],
+                ["HGS %", getTxt('p1_c1_f_hgs_pct'), getTxt('p1_c1_c_hgs_pct'), getTxt('p1_c1_d_hgs_pct'), getTxt('p1_c2_f_hgs_pct'), getTxt('p1_c2_c_hgs_pct'), getTxt('p1_c2_d_hgs_pct'), getTxt('p1_c3_f_hgs_pct'), getTxt('p1_c3_c_hgs_pct'), getTxt('p1_c3_d_hgs_pct'), getTxt('p1_c4_f_hgs_pct'), getTxt('p1_c4_c_hgs_pct'), getTxt('p1_c4_d_hgs_pct')],
+                ["HGS (ppb)", getTxt('main_c1_f_hgs'), getTxt('main_c1_c_hgs'), getTxt('main_c1_d_hgs'), getTxt('main_c2_f_hgs'), getTxt('main_c2_c_hgs'), getTxt('main_c2_d_hgs'), getTxt('main_c3_f_hgs'), getTxt('main_c3_c_hgs'), getTxt('main_c3_d_hgs'), getTxt('main_c4_f_hgs'), getTxt('main_c4_c_hgs'), getTxt('main_c4_d_hgs')],
+                ["Oil on Cuttings (w/w) %", "", "", getTxt('p1_c1_w_pct'), "", "", getTxt('p1_c2_w_pct'), "", "", getTxt('p1_c3_w_pct'), "", "", getTxt('p1_c4_w_pct')],
                 [],
-                ["SECTION 5: VOLUME DISCHARGED BREAKDOWN"],
+                ["6. VOLUME DISCHARGED BREAKDOWN"],
                 ["Parameter", "Centrifuge #1", "Centrifuge #2", "Centrifuge #3", "Centrifuge #4"],
-                ["Total Mud Lost (bbl)", getTxt('b1_mud'), getTxt('b2_mud'), getTxt('b3_mud'), getTxt('b4_mud')],
-                ["Oil Vol Lost (bbl)", getTxt('b1_oil'), getTxt('b2_oil'), getTxt('b3_oil'), getTxt('b4_oil')],
-                ["Water Vol Lost (bbl)", getTxt('b1_water'), getTxt('b2_water'), getTxt('b3_water'), getTxt('b4_water')],
-                ["Solids Vol Lost (bbl)", getTxt('b1_sol'), getTxt('b2_sol'), getTxt('b3_sol'), getTxt('b4_sol')],
-                ["LGS Vol (bbl)", getTxt('b1_lgs'), getTxt('b2_lgs'), getTxt('b3_lgs'), getTxt('b4_lgs')],
-                ["HGS Vol (bbl)", getTxt('b1_hgs'), getTxt('b2_hgs'), getTxt('b3_hgs'), getTxt('b4_hgs')],
-                ["Skips Discharged", getTxt('b1_skips_out'), getTxt('b2_skips_out'), getTxt('b3_skips_out'), getTxt('b4_skips_out')],
+                ["Total Mud Vol. Lost (bbl.)", getTxt('b1_mud'), getTxt('b2_mud'), getTxt('b3_mud'), getTxt('b4_mud')],
+                ["Oil Vol. Lost (bbl.)", getTxt('b1_oil'), getTxt('b2_oil'), getTxt('b3_oil'), getTxt('b4_oil')],
+                ["Water Vol. Lost (bbl.)", getTxt('b1_water'), getTxt('b2_water'), getTxt('b3_water'), getTxt('b4_water')],
+                ["Solids Vol. Lost (bbl.)", getTxt('b1_sol'), getTxt('b2_sol'), getTxt('b3_sol'), getTxt('b4_sol')],
+                ["LGS Vol. (bbl.)", getTxt('b1_lgs'), getTxt('b2_lgs'), getTxt('b3_lgs'), getTxt('b4_lgs')],
+                ["HGS Vol. (bbl.)", getTxt('b1_hgs'), getTxt('b2_hgs'), getTxt('b3_hgs'), getTxt('b4_hgs')],
+                ["Skips Filled", getTxt('b1_skips_out'), getTxt('b2_skips_out'), getTxt('b3_skips_out'), getTxt('b4_skips_out')],
                 [],
-                ["SECTION 6: PAGE 2 MASS BALANCE ANALYTICS"],
-                ["Total Solids (bbl)", getTxt('m2_c1_f_ts'), getTxt('m2_c1_c_ts'), getTxt('m2_c1_d_ts'), getTxt('m2_c2_f_ts'), getTxt('m2_c2_c_ts'), getTxt('m2_c2_d_ts'), getTxt('m2_c3_f_ts'), getTxt('m2_c3_c_ts'), getTxt('m2_c3_d_ts'), getTxt('m2_c4_f_ts'), getTxt('m2_c4_c_ts'), getTxt('m2_c4_d_ts')],
-                [],
-                ["SECTION 7: FLOW METRICS BY VOLUME (gpm)"],
-                ["Oil (gpm)", getTxt('v_c1_f_oil'), getTxt('v_c1_c_oil'), getTxt('v_c1_d_oil'), getTxt('v_c2_f_oil'), getTxt('v_c2_c_oil'), getTxt('v_c2_d_oil'), getTxt('v_c3_f_oil'), getTxt('v_c3_c_oil'), getTxt('v_c3_d_oil'), getTxt('v_c4_f_oil'), getTxt('v_c4_c_oil'), getTxt('v_c4_d_oil')],
-                ["Water (gpm)", getTxt('v_c1_f_wtr'), getTxt('v_c1_c_wtr'), getTxt('v_c1_d_wtr'), getTxt('v_c2_f_wtr'), getTxt('v_c2_c_wtr'), getTxt('v_c2_d_wtr'), getTxt('v_c3_f_wtr'), getTxt('v_c3_c_wtr'), getTxt('v_c3_d_wtr'), getTxt('v_c4_f_wtr'), getTxt('w_c4_c_wtr'), getTxt('v_c4_d_wtr')],
-                [],
-                ["SECTION 8: FLOW METRICS BY WEIGHT (kg/min)"],
-                ["Oil (kg/min)", getTxt('w_c1_f_oil'), getTxt('w_c1_c_oil'), getTxt('w_c1_d_oil'), getTxt('w_c2_f_oil'), getTxt('w_c2_c_oil'), getTxt('w_c2_d_oil'), getTxt('w_c3_f_oil'), getTxt('w_c3_c_oil'), getTxt('w_c3_d_oil'), getTxt('w_c4_f_oil'), getTxt('w_c4_c_oil'), getTxt('w_c4_d_oil')],
-                ["Water (kg/min)", getTxt('w_c1_f_wtr'), getTxt('w_c1_c_wtr'), getTxt('w_c1_d_wtr'), getTxt('w_c2_f_wtr'), getTxt('w_c2_c_wtr'), getTxt('w_c2_d_wtr'), getTxt('w_c3_f_wtr'), getTxt('w_c3_c_wtr'), getTxt('w_c3_d_wtr'), getTxt('w_c4_f_wtr'), getTxt('w_c4_c_wtr'), getTxt('w_c4_d_wtr')],
-                [],
-                ["SECTION 9: SYSTEM EFFICIENCIES"],
-                ["Dual HGS Recovered %", getTxt('eff_dual_hgs'), "Dual LGS Discard %", getTxt('eff_dual_lgs')],
-                ["Indiv HGS Recovered %", getTxt('eff_ind_hgs'), "Indiv LGS Discard %", getTxt('eff_ind_lgs')],
-                ["Solids Removal Mode HGS Discard %", getTxt('sol_rem_hgs'), "Solids Removal Mode LGS Discard %", getTxt('sol_rem_lgs')],
-                [],
-                ["COMMENTS / ANNOTATIONS"],
+                ["7. COMMENTS"],
                 [getVal('comments')]
             ];
         }
@@ -1196,7 +1240,7 @@
             const csvString = "data:text/csv;charset=utf-8," + data.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
             const dlAnchor = document.createElement('a');
             dlAnchor.setAttribute("href", encodeURI(csvString));
-            dlAnchor.setAttribute("download", `Solids_Control_System_Report_No_${getVal('report_num')}.csv`);
+            dlAnchor.setAttribute("download", `Page1_Overview_Report_No_${getVal('report_num')}.csv`);
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
@@ -1206,11 +1250,10 @@
             const data = gatherDataset();
             const ws = XLSX.utils.aoa_to_sheet(data);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, ws, "System Analytics Logs");
-            XLSX.writeFile(workbook, `Solids_Control_System_Report_No_${getVal('report_num')}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, ws, "Page 1 Overview");
+            XLSX.writeFile(workbook, `Page1_Overview_Report_No_${getVal('report_num')}.xlsx`);
         }
 
-        // Run system calculations on initialization loop
         window.onload = function() {
             calculateReport();
             renderHistoryTable();
