@@ -38,7 +38,6 @@
         </div>
 
         <div class="mb-4">
-            <div class="table-header">General Data</div>
             <div class="grid grid-cols-3 gap-y-px bg-gray-300 border border-gray-300 text-[11px]">
                 <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Date (DD-MM-YYYY)</span><input type="text" id="date" value="15/Mar/25" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
                 <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Oil Density (SG)</span><input type="number" id="oil_density" value="0.84" step="0.01" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center" oninput="calculateReport()"></div>
@@ -662,7 +661,7 @@
                             <td id="v_c1_f_wtr" class="p-1"></td><td id="v_c1_c_wtr" class="p-1"></td><td id="v_c1_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
                             <td id="v_c2_f_wtr" class="p-1"></td><td id="v_c2_c_wtr" class="p-1"></td><td id="v_c2_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">91%</td>
                             <td id="v_c3_f_wtr" class="p-1"></td><td id="v_c3_c_wtr" class="p-1"></td><td id="v_c3_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
-                            <td id="v_c4_f_wtr" class="p-1"></td><td id="w_c4_c_wtr" class="p-1"></td><td id="v_c4_d_wtr" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">90%</td>
+                            <td id="v_c4_f_wtr" class="p-1"></td><td id="v_c4_c_wtr" class="p-1"></td><td id="v_c4_d_wtr" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">90%</td>
                         </tr>
                         <tr class="border-b border-gray-200">
                             <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">LGS (gpm)</td>
@@ -758,55 +757,61 @@
     </div>
 
     <script>
+        // Defensive wrapper functions to fully prevent JavaScript execution crashes
+        const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        const getTxt = (id) => { const el = document.getElementById(id); return el ? el.innerText : "0"; };
+        const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : "0"; };
+
         function calculateReport() {
             for (let i = 1; i <= 4; i++) {
-                const hours = parseFloat(document.getElementById(`c${i}_hours`).value) || 0;
-                const f_gpm = parseFloat(document.getElementById(`c${i}_f_gpm`).value) || 0;
-                const c_gpm = parseFloat(document.getElementById(`c${i}_c_gpm`).value) || 0;
+                const hours = parseFloat(getVal(`c${i}_hours`)) || 0;
+                const f_gpm = parseFloat(getVal(`c${i}_f_gpm`)) || 0;
+                const c_gpm = parseFloat(getVal(`c${i}_c_gpm`)) || 0;
                 
                 const d_gpm = Math.max(0, f_gpm - c_gpm);
-                document.getElementById(`c${i}_gpm`).innerText = d_gpm.toFixed(1);
+                setTxt(`c${i}_gpm`, d_gpm.toFixed(1));
 
                 const f_vol = (f_gpm * 60 * hours) / 42;
                 const c_vol = (c_gpm * 60 * hours) / 42;
                 const d_vol = (d_gpm * 60 * hours) / 42;
 
-                document.getElementById(`c${i}_f_vol`).innerText = Math.round(f_vol);
-                document.getElementById(`c${i}_c_vol`).innerText = Math.round(c_vol);
-                document.getElementById(`c${i}_d_vol`).innerText = Math.round(d_vol);
+                setTxt(`c${i}_f_vol`, Math.round(f_vol));
+                setTxt(`c${i}_c_vol`, Math.round(c_vol));
+                setTxt(`c${i}_d_vol`, Math.round(d_vol));
 
                 ['f', 'c', 'd'].forEach(phase => {
-                    const oil = parseFloat(document.getElementById(`c${i}_${phase}_oil`).value) || 0;
-                    const water = parseFloat(document.getElementById(`c${i}_${phase}_water`).value) || 0;
+                    const oil = parseFloat(getVal(`c${i}_${phase}_oil`)) || 0;
+                    const water = parseFloat(getVal(`c${i}_${phase}_water`)) || 0;
                     const solids = Math.max(0, 100 - oil - water);
-                    document.getElementById(`c${i}_${phase}_sol`).innerText = solids.toFixed(1);
+                    setTxt(`c${i}_${phase}_sol`, solids.toFixed(1));
                 });
 
-                document.getElementById(`b${i}_mud`).innerText = d_vol.toFixed(1);
+                setTxt(`b${i}_mud`, d_vol.toFixed(1));
                 
-                const d_oil_pct = parseFloat(document.getElementById(`c${i}_d_oil`).value) || 0;
-                const d_wtr_pct = parseFloat(document.getElementById(`c${i}_d_water`).value) || 0;
-                const d_sol_pct = parseFloat(document.getElementById(`c${i}_d_sol`).innerText) || 0;
+                const d_oil_pct = parseFloat(getVal(`c${i}_d_oil`)) || 0;
+                const d_wtr_pct = parseFloat(getVal(`c${i}_d_water`)) || 0;
+                const d_sol_pct = parseFloat(getTxt(`c${i}_d_sol`)) || 0;
 
-                document.getElementById(`b${i}_oil`).innerText = (d_vol * (d_oil_pct / 100)).toFixed(1);
-                document.getElementById(`b${i}_water`).innerText = (d_vol * (d_wtr_pct / 100)).toFixed(1);
-                document.getElementById(`b${i}_sol`).innerText = (d_vol * (d_sol_pct / 100)).toFixed(1);
+                setTxt(`b${i}_oil`, (d_vol * (d_oil_pct / 100)).toFixed(1));
+                setTxt(`b${i}_water`, (d_vol * (d_wtr_pct / 100)).toFixed(1));
+                setTxt(`b${i}_sol`, (d_vol * (d_sol_pct / 100)).toFixed(1));
                 
-                document.getElementById(`b${i}_lgs`).innerText = (d_vol * (d_sol_pct / 100) * 0.71).toFixed(1);
-                document.getElementById(`b${i}_hgs`).innerText = (d_vol * (d_sol_pct / 100) * 0.29).toFixed(1);
+                setTxt(`b${i}_lgs`, (d_vol * (d_sol_pct / 100) * 0.71).toFixed(1));
+                setTxt(`b${i}_hgs`, (d_vol * (d_sol_pct / 100) * 0.29).toFixed(1));
 
-                const skips = document.getElementById(`c${i}_skips`).value;
-                document.getElementById(`b${i}_skips_out`).innerText = skips;
+                const skips = getVal(`c${i}_skips`);
+                setTxt(`b${i}_skips_out`, skips);
             }
 
             syncPage2ModalData();
         }
 
         function syncPage2ModalData() {
-            const sgOil = parseFloat(document.getElementById('oil_density').value) || 0.84;
+            const sgOil = parseFloat(getVal('oil_density')) || 0.84;
             const sgWater = 1.0;
-            const sgLGS = parseFloat(document.getElementById('lgs_density').value) || 2.6;
-            const sgHGS = parseFloat(document.getElementById('hgs_density').value) || 4.2;
+            const sgLGS = parseFloat(getVal('lgs_density')) || 2.6;
+            const sgHGS = parseFloat(getVal('hgs_density')) || 4.2;
             const galToKgCoeff = 3.78541;
 
             const factors = {
@@ -817,116 +822,132 @@
             };
 
             for (let i = 1; i <= 4; i++) {
-                document.getElementById(`m2_c${i}_mode`).innerText = document.getElementById(`c${i}_mode`).value;
+                setTxt(`m2_c${i}_mode`, getVal(`c${i}_mode`));
                 
-                const f_pcf = parseFloat(document.getElementById(`c${i}_f_pcf`).value) || 0;
-                const c_pcf = parseFloat(document.getElementById(`c${i}_c_pcf`).value) || 0;
-                const d_pcf = parseFloat(document.getElementById(`c${i}_d_pcf`).value) || 0;
+                const f_pcf = parseFloat(getVal(`c${i}_f_pcf`)) || 0;
+                const c_pcf = parseFloat(getVal(`c${i}_c_pcf`)) || 0;
+                const d_pcf = parseFloat(getVal(`c${i}_d_pcf`)) || 0;
                 
-                document.getElementById(`m2_c${i}_f_pcf`).innerText = f_pcf.toFixed(1);
-                document.getElementById(`m2_c${i}_c_pcf`).innerText = c_pcf.toFixed(1);
-                document.getElementById(`m2_c${i}_d_pcf`).innerText = d_pcf.toFixed(1);
+                setTxt(`m2_c${i}_f_pcf`, f_pcf.toFixed(1));
+                setTxt(`m2_c${i}_c_pcf`, c_pcf.toFixed(1));
+                setTxt(`m2_c${i}_d_pcf`, d_pcf.toFixed(1));
 
-                const f_vol = parseFloat(document.getElementById(`c${i}_f_vol`).innerText) || 0;
-                const c_vol = parseFloat(document.getElementById(`c${i}_c_vol`).innerText) || 0;
-                const d_vol = parseFloat(document.getElementById(`c${i}_d_vol`).innerText) || 0;
+                const f_vol = parseFloat(getTxt(`c${i}_f_vol`)) || 0;
+                const c_vol = parseFloat(getTxt(`c${i}_c_vol`)) || 0;
+                const d_vol = parseFloat(getTxt(`c${i}_d_vol`)) || 0;
                 
-                document.getElementById(`m2_c${i}_f_vol`).innerText = Math.round(f_vol);
-                document.getElementById(`m2_c${i}_c_vol`).innerText = Math.round(c_vol);
-                document.getElementById(`m2_c${i}_d_vol`).innerText = Math.round(d_vol);
+                setTxt(`m2_c${i}_f_vol`, Math.round(f_vol));
+                setTxt(`m2_c${i}_c_vol`, Math.round(c_vol));
+                setTxt(`m2_c${i}_d_vol`, Math.round(d_vol));
 
-                const f_sol_pct = parseFloat(document.getElementById(`c${i}_f_sol`).innerText) || 0;
-                const c_sol_pct = parseFloat(document.getElementById(`c${i}_c_sol`).innerText) || 0;
-                const d_sol_pct = parseFloat(document.getElementById(`c${i}_d_sol`).innerText) || 0;
+                const f_sol_pct = parseFloat(getTxt(`c${i}_f_sol`)) || 0;
+                const c_sol_pct = parseFloat(getTxt(`c${i}_c_sol`)) || 0;
+                const d_sol_pct = parseFloat(getTxt(`c${i}_d_sol`)) || 0;
 
-                document.getElementById(`p1_c${i}_f_ts`).innerText = f_sol_pct.toFixed(1);
-                document.getElementById(`p1_c${i}_c_ts`).innerText = c_sol_pct.toFixed(1);
-                document.getElementById(`p1_c${i}_d_ts`).innerText = d_sol_pct.toFixed(1);
+                setTxt(`p1_c${i}_f_ts`, f_sol_pct.toFixed(1));
+                setTxt(`p1_c${i}_c_ts`, c_sol_pct.toFixed(1));
+                setTxt(`p1_c${i}_d_ts`, d_sol_pct.toFixed(1));
 
                 const f_ts = (f_vol * (f_sol_pct / 100)).toFixed(1);
                 const c_ts = (c_vol * (c_sol_pct / 100)).toFixed(1);
                 const d_ts = (d_vol * (d_sol_pct / 100)).toFixed(1);
 
-                document.getElementById(`m2_c${i}_f_ts`).innerText = f_ts;
-                document.getElementById(`m2_c${i}_c_ts`).innerText = c_ts;
-                document.getElementById(`m2_c${i}_d_ts`).innerText = d_ts;
+                setTxt(`m2_c${i}_f_ts`, f_ts);
+                setTxt(`m2_c${i}_c_ts`, c_ts);
+                setTxt(`m2_c${i}_d_ts`, d_ts);
 
                 const val_f_lgs = (factors[i].f_lgs * 100).toFixed(1);
                 const val_c_lgs = (factors[i].c_lgs * 100).toFixed(1);
                 const val_d_lgs = (factors[i].d_lgs * 100).toFixed(1);
 
-                document.getElementById(`p1_c${i}_f_lgs_pct`).innerText = val_f_lgs;
-                document.getElementById(`p1_c${i}_c_lgs_pct`).innerText = val_c_lgs;
-                document.getElementById(`p1_c${i}_d_lgs_pct`).innerText = val_d_lgs;
+                setTxt(`p1_c${i}_f_lgs_pct`, val_f_lgs);
+                setTxt(`p1_c${i}_c_lgs_pct`, val_c_lgs);
+                setTxt(`p1_c${i}_d_lgs_pct`, val_d_lgs);
 
                 const val_f_hgs = (factors[i].f_hgs * 100).toFixed(1);
                 const val_c_hgs = (factors[i].c_hgs * 100).toFixed(1);
                 const val_d_hgs = (factors[i].d_hgs * 100).toFixed(1);
 
-                document.getElementById(`p1_c${i}_f_hgs_pct`).innerText = val_f_hgs;
-                document.getElementById(`p1_c${i}_c_hgs_pct`).innerText = val_c_hgs;
-                document.getElementById(`p1_c${i}_d_hgs_pct`).innerText = val_d_hgs;
+                setTxt(`p1_c${i}_f_hgs_pct`, val_f_hgs);
+                setTxt(`p1_c${i}_c_hgs_pct`, val_c_hgs);
+                setTxt(`p1_c${i}_d_hgs_pct`, val_d_hgs);
 
-                document.getElementById(`m2_c${i}_f_lgs`).innerText = (f_ts * factors[i].f_lgs).toFixed(1);
-                document.getElementById(`m2_c${i}_c_lgs`).innerText = (c_ts * factors[i].c_lgs).toFixed(1);
-                document.getElementById(`m2_c${i}_d_lgs`).innerText = (d_ts * factors[i].d_lgs).toFixed(1);
+                setTxt(`m2_c${i}_f_lgs`, (f_ts * factors[i].f_lgs).toFixed(1));
+                setTxt(`m2_c${i}_c_lgs`, (c_ts * factors[i].c_lgs).toFixed(1));
+                setTxt(`m2_c${i}_d_lgs`, (d_ts * factors[i].d_lgs).toFixed(1));
 
-                document.getElementById(`m2_c${i}_f_hgs`).innerText = (f_ts * factors[i].f_hgs).toFixed(1);
-                document.getElementById(`m2_c${i}_c_hgs`).innerText = (c_ts * factors[i].c_hgs).toFixed(1);
-                document.getElementById(`m2_c${i}_d_hgs`).innerText = (d_ts * factors[i].d_hgs).toFixed(1);
+                setTxt(`m2_c${i}_f_hgs`, (f_ts * factors[i].f_hgs).toFixed(1));
+                setTxt(`m2_c${i}_c_hgs`, (c_ts * factors[i].c_hgs).toFixed(1));
+                setTxt(`m2_c${i}_d_hgs`, (d_ts * factors[i].d_hgs).toFixed(1));
 
-                const f_gpm = parseFloat(document.getElementById(`c${i}_f_gpm`).value) || 0;
-                const c_gpm = parseFloat(document.getElementById(`c${i}_c_gpm`).value) || 0;
-                const d_gpm = parseFloat(document.getElementById(`c${i}_gpm`).innerText) || 0;
+                const f_gpm = parseFloat(getVal(`c${i}_f_gpm`)) || 0;
+                const c_gpm = parseFloat(getVal(`c${i}_c_gpm`)) || 0;
+                const d_gpm = parseFloat(getTxt(`c${i}_gpm`)) || 0;
 
-                const f_oil_pct = parseFloat(document.getElementById(`c${i}_f_oil`).value) || 0;
-                const c_oil_pct = parseFloat(document.getElementById(`c${i}_c_oil`).value) || 0;
-                const d_oil_pct = parseFloat(document.getElementById(`c${i}_d_oil`).value) || 0;
+                const f_oil_pct = parseFloat(getVal(`c${i}_f_oil`)) || 0;
+                const c_oil_pct = parseFloat(getVal(`c${i}_c_oil`)) || 0;
+                const d_oil_pct = parseFloat(getVal(`c${i}_d_oil`)) || 0;
 
                 const v_f_oil = f_gpm * (f_oil_pct / 100);
                 const v_c_oil = c_gpm * (c_oil_pct / 100);
                 const v_d_oil = d_gpm * (d_oil_pct / 100);
 
-                document.getElementById(`v_c${i}_f_oil`).innerText = v_f_oil.toFixed(1);
-                document.getElementById(`v_c${i}_c_oil`).innerText = v_c_oil.toFixed(1);
-                document.getElementById(`v_c${i}_d_oil`).innerText = v_d_oil.toFixed(1);
+                setTxt(`v_c${i}_f_oil`, v_f_oil.toFixed(1));
+                setTxt(`v_c${i}_c_oil`, v_c_oil.toFixed(1));
+                setTxt(`v_c${i}_d_oil`, v_d_oil.toFixed(1));
 
-                const f_wtr_pct = parseFloat(document.getElementById(`c${i}_f_water`).value) || 0;
-                const c_wtr_pct = parseFloat(document.getElementById(`c${i}_c_water`).value) || 0;
-                const d_wtr_pct = parseFloat(document.getElementById(`c${i}_d_water`).value) || 0;
+                const f_wtr_pct = parseFloat(getVal(`c${i}_f_water`)) || 0;
+                const c_wtr_pct = parseFloat(getVal(`c${i}_c_water`)) || 0;
+                const d_wtr_pct = parseFloat(getVal(`c${i}_d_water`)) || 0;
 
                 const v_f_wtr = f_gpm * (f_wtr_pct / 100);
                 const v_c_wtr = c_gpm * (c_wtr_pct / 100);
                 const v_d_wtr = d_gpm * (d_wtr_pct / 100);
 
-                document.getElementById(`v_c${i}_f_wtr`).innerText = v_f_wtr.toFixed(1);
-                document.getElementById(`v_c${i}_c_wtr`).innerText = v_c_wtr.toFixed(1);
-                document.getElementById(`v_c${i}_d_wtr`).innerText = v_d_wtr.toFixed(1);
+                setTxt(`v_c${i}_f_wtr`, v_f_wtr.toFixed(1));
+                setTxt(`v_c${i}_c_wtr`, v_c_wtr.toFixed(1));
+                setTxt(`v_c${i}_d_wtr`, v_d_wtr.toFixed(1));
 
-                document.getElementById(`v_c${i}_f_lgs`).innerText = (f_gpm * (f_sol_pct / 100) * factors[i].f_lgs).toFixed(1);
-                document.getElementById(`v_c${i}_c_lgs`).innerText = (c_gpm * (c_sol_pct / 100) * factors[i].c_lgs).toFixed(1);
-                document.getElementById(`v_c${i}_d_lgs`).innerText = (d_gpm * (d_sol_pct / 100) * factors[i].d_lgs).toFixed(1);
+                const v_f_lgs = (f_gpm * (f_sol_pct / 100) * factors[i].f_lgs);
+                const v_c_lgs = (c_gpm * (c_sol_pct / 100) * factors[i].c_lgs);
+                const v_d_lgs = (d_gpm * (d_sol_pct / 100) * factors[i].d_lgs);
 
-                document.getElementById(`v_c${i}_f_hgs`).innerText = (f_gpm * (f_sol_pct / 100) * factors[i].f_hgs).toFixed(1);
-                document.getElementById(`v_c${i}_c_hgs`).innerText = (c_gpm * (c_sol_pct / 100) * factors[i].c_hgs).toFixed(1);
-                document.getElementById(`v_c${i}_d_hgs`).innerText = (d_gpm * (d_sol_pct / 100) * factors[i].d_hgs).toFixed(1);
+                setTxt(`v_c${i}_f_lgs`, v_f_lgs.toFixed(1));
+                setTxt(`v_c${i}_c_lgs`, v_c_lgs.toFixed(1));
+                setTxt(`v_c${i}_d_lgs`, v_d_lgs.toFixed(1));
 
-                document.getElementById(`w_c${i}_f_oil`).innerText = (v_f_oil * sgOil * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_c_oil`).innerText = (v_c_oil * sgOil * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_d_oil`).innerText = (v_d_oil * sgOil * galToKgCoeff).toFixed(1);
+                const v_f_hgs = (f_gpm * (f_sol_pct / 100) * factors[i].f_hgs);
+                const v_c_hgs = (c_gpm * (c_sol_pct / 100) * factors[i].c_hgs);
+                const v_d_hgs = (d_gpm * (d_sol_pct / 100) * factors[i].d_hgs);
 
-                document.getElementById(`w_c${i}_f_wtr`).innerText = (v_f_wtr * sgWater * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_c_wtr`).innerText = (v_c_wtr * sgWater * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_d_wtr`).innerText = (v_d_wtr * sgWater * galToKgCoeff).toFixed(1);
+                setTxt(`v_c${i}_f_hgs`, v_f_hgs.toFixed(1));
+                setTxt(`v_c${i}_c_hgs`, v_c_hgs.toFixed(1));
+                setTxt(`v_c${i}_d_hgs`, v_d_hgs.toFixed(1));
 
-                document.getElementById(`w_c${i}_f_lgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_f_lgs`).innerText) * sgLGS * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_c_lgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_c_lgs`).innerText) * sgLGS * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_d_lgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_d_lgs`).innerText) * sgLGS * galToKgCoeff).toFixed(1);
+                setTxt(`w_c${i}_f_oil`, (v_f_oil * sgOil * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_c_oil`, (v_c_oil * sgOil * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_d_oil`, (v_d_oil * sgOil * galToKgCoeff).toFixed(1));
 
-                document.getElementById(`w_c${i}_f_hgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_f_hgs`).innerText) * sgHGS * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_c_hgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_c_hgs`).innerText) * sgHGS * galToKgCoeff).toFixed(1);
-                document.getElementById(`w_c${i}_d_hgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_d_hgs`).innerText) * sgHGS * galToKgCoeff).toFixed(1);
+                setTxt(`w_c${i}_f_wtr`, (v_f_wtr * sgWater * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_c_wtr`, (v_c_wtr * sgWater * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_d_wtr`, (v_d_wtr * sgWater * galToKgCoeff).toFixed(1));
+
+                setTxt(`w_c${i}_f_lgs`, (v_f_lgs * sgLGS * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_c_lgs`, (v_c_lgs * sgLGS * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_d_lgs`, (v_d_lgs * sgLGS * galToKgCoeff).toFixed(1));
+
+                setTxt(`w_c${i}_f_hgs`, (v_f_hgs * sgHGS * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_c_hgs`, (v_c_hgs * sgHGS * galToKgCoeff).toFixed(1));
+                setTxt(`w_c${i}_d_hgs`, (v_d_hgs * sgHGS * galToKgCoeff).toFixed(1));
             }
+        }
+
+        function openFinalReportModal() {
+            document.getElementById('finalReportModal').classList.remove('hidden');
+        }
+
+        function closeFinalReportModal() {
+            document.getElementById('finalReportModal').classList.add('hidden');
         }
 
         function getHistory() {
@@ -936,6 +957,7 @@
         function renderHistoryTable() {
             const history = getHistory();
             const tbody = document.getElementById('history_table_body');
+            if (!tbody) return;
             tbody.innerHTML = '';
             
             if(history.length === 0) {
@@ -969,54 +991,47 @@
             const history = getHistory();
             
             const totalLost = (
-                parseFloat(document.getElementById('b1_mud').innerText) +
-                parseFloat(document.getElementById('b2_mud').innerText) +
-                parseFloat(document.getElementById('b3_mud').innerText) +
-                parseFloat(document.getElementById('b4_mud').innerText)
+                parseFloat(getTxt('b1_mud')) +
+                parseFloat(getTxt('b2_mud')) +
+                parseFloat(getTxt('b3_mud')) +
+                parseFloat(getTxt('b4_mud'))
             ).toFixed(1);
 
             const record = {
-                date: document.getElementById('date').value,
-                reportNum: document.getElementById('report_num').value,
-                operator: document.getElementById('operator').value,
+                date: getVal('date'),
+                reportNum: getVal('report_num'),
+                operator: getVal('operator'),
                 totalMudLost: totalLost,
-                oilDensity: document.getElementById('oil_density').value,
-                hgsDensity: document.getElementById('hgs_density').value,
-                lgsDensity: document.getElementById('lgs_density').value,
-                brineCorr: document.getElementById('brine_corr').value,
-                brineDensity: document.getElementById('brine_density').value,
-                oilFractionOwr: document.getElementById('oil_fraction_owr').value,
+                oilDensity: getVal('oil_density'),
+                hgsDensity: getVal('hgs_density'),
+                lgsDensity: getVal('lgs_density'),
+                brineCorr: getVal('brine_corr'),
+                brineDensity: getVal('brine_density'),
+                oilFractionOwr: getVal('oil_fraction_owr'),
                 
-                c1_hours: document.getElementById('c1_hours').value,
-                c2_hours: document.getElementById('c2_hours').value,
-                c3_hours: document.getElementById('c3_hours').value,
-                c4_hours: document.getElementById('c4_hours').value,
-                
-                c1_f_gpm: document.getElementById('c1_f_gpm').value, c1_c_gpm: document.getElementById('c1_c_gpm').value,
-                c2_f_gpm: document.getElementById('c2_f_gpm').value, c2_c_gpm: document.getElementById('c2_c_gpm').value,
-                c3_f_gpm: document.getElementById('c3_f_gpm').value, c3_c_gpm: document.getElementById('c3_c_gpm').value,
-                c4_f_gpm: document.getElementById('c4_f_gpm').value, c4_c_gpm: document.getElementById('c4_c_gpm').value,
+                c1_hours: getVal('c1_hours'), c2_hours: getVal('c2_hours'), c3_hours: getVal('c3_hours'), c4_hours: getVal('c4_hours'),
+                c1_f_gpm: getVal('c1_f_gpm'), c1_c_gpm: getVal('c1_c_gpm'),
+                c2_f_gpm: getVal('c2_f_gpm'), c2_c_gpm: getVal('c2_c_gpm'),
+                c3_f_gpm: getVal('c3_f_gpm'), c3_c_gpm: getVal('c3_c_gpm'),
+                c4_f_gpm: getVal('c4_f_gpm'), c4_c_gpm: getVal('c4_c_gpm'),
 
-                c1_f_pcf: document.getElementById('c1_f_pcf').value, c1_c_pcf: document.getElementById('c1_c_pcf').value, c1_d_pcf: document.getElementById('c1_d_pcf').value,
-                c2_f_pcf: document.getElementById('c2_f_pcf').value, c2_c_pcf: document.getElementById('c2_c_pcf').value, c2_d_pcf: document.getElementById('c2_d_pcf').value,
-                c3_f_pcf: document.getElementById('c3_f_pcf').value, c3_c_pcf: document.getElementById('c3_c_pcf').value, c3_d_pcf: document.getElementById('c3_d_pcf').value,
-                c4_f_pcf: document.getElementById('c4_f_pcf').value, c4_c_pcf: document.getElementById('c4_c_pcf').value, c4_d_pcf: document.getElementById('c4_d_pcf').value,
+                c1_f_pcf: getVal('c1_f_pcf'), c1_c_pcf: getVal('c1_c_pcf'), c1_d_pcf: getVal('c1_d_pcf'),
+                c2_f_pcf: getVal('c2_f_pcf'), c2_c_pcf: getVal('c2_c_pcf'), c2_d_pcf: getVal('c2_d_pcf'),
+                c3_f_pcf: getVal('c3_f_pcf'), c3_c_pcf: getVal('c3_c_pcf'), c3_d_pcf: getVal('c3_d_pcf'),
+                c4_f_pcf: getVal('c4_f_pcf'), c4_c_pcf: getVal('c4_c_pcf'), c4_d_pcf: getVal('c4_d_pcf'),
 
-                c1_f_oil: document.getElementById('c1_f_oil').value, c1_c_oil: document.getElementById('c1_c_oil').value, c1_d_oil: document.getElementById('c1_d_oil').value,
-                c2_f_oil: document.getElementById('c2_f_oil').value, c2_c_oil: document.getElementById('c2_c_oil').value, c2_d_oil: document.getElementById('c2_d_oil').value,
-                c3_f_oil: document.getElementById('c3_f_oil').value, c3_c_oil: document.getElementById('c3_c_oil').value, c3_d_oil: document.getElementById('c3_d_oil').value,
-                c4_f_oil: document.getElementById('c4_f_oil').value, c4_c_oil: document.getElementById('c4_c_oil').value, c4_d_oil: document.getElementById('c4_d_oil').value,
+                c1_f_oil: getVal('c1_f_oil'), c1_c_oil: getVal('c1_c_oil'), c1_d_oil: getVal('c1_d_oil'),
+                c2_f_oil: getVal('c2_f_oil'), c2_c_oil: getVal('c2_c_oil'), c2_d_oil: getVal('c2_d_oil'),
+                c3_f_oil: getVal('c3_f_oil'), c3_c_oil: getVal('c3_c_oil'), c3_d_oil: getVal('c3_d_oil'),
+                c4_f_oil: getVal('c4_f_oil'), c4_c_oil: getVal('c4_c_oil'), c4_d_oil: getVal('c4_d_oil'),
 
-                c1_f_water: document.getElementById('c1_f_water').value, c1_c_water: document.getElementById('c1_c_water').value, c1_d_water: document.getElementById('c1_d_water').value,
-                c2_f_water: document.getElementById('c2_f_water').value, c2_c_water: document.getElementById('c2_c_water').value, c2_d_water: document.getElementById('c2_d_water').value,
-                c3_f_water: document.getElementById('c3_f_water').value, c3_c_water: document.getElementById('c3_c_water').value, c3_d_water: document.getElementById('c3_d_water').value,
-                c4_f_water: document.getElementById('c4_f_water').value, c4_c_water: document.getElementById('c4_c_water').value, c4_d_water: document.getElementById('c4_d_water').value,
+                c1_f_water: getVal('c1_f_water'), c1_c_water: getVal('c1_c_water'), c1_d_water: getVal('c1_d_water'),
+                c2_f_water: getVal('c2_f_water'), c2_c_water: getVal('c2_c_water'), c2_d_water: getVal('c2_d_water'),
+                c3_f_water: getVal('c3_f_water'), c3_c_water: getVal('c3_c_water'), c3_d_water: getVal('c3_d_water'),
+                c4_f_water: getVal('c4_f_water'), c4_c_water: getVal('c4_c_water'), c4_d_water: getVal('c4_d_water'),
 
-                c1_d_gpm: document.getElementById('c1_gpm').innerText,
-                c2_d_gpm: document.getElementById('c2_gpm').innerText,
-                c3_d_gpm: document.getElementById('c3_gpm').innerText,
-                c4_d_gpm: document.getElementById('c4_gpm').innerText,
-                comments: document.getElementById('comments').value
+                c1_d_gpm: getTxt('c1_gpm'), c2_d_gpm: getTxt('c2_gpm'), c3_d_gpm: getTxt('c3_gpm'), c4_d_gpm: getTxt('c4_gpm'),
+                comments: getVal('comments')
             };
 
             const cleanHistory = history.filter(item => !(item.date === record.date && item.reportNum === record.reportNum));
@@ -1031,28 +1046,28 @@
             const record = history[index];
             if (!record) return;
 
-            document.getElementById('date').value = record.date;
-            document.getElementById('report_num').value = record.reportNum;
-            document.getElementById('operator').value = record.operator;
-            document.getElementById('oil_density').value = record.oilDensity;
-            document.getElementById('hgs_density').value = record.hgsDensity;
-            document.getElementById('lgs_density').value = record.lgsDensity;
-            document.getElementById('brine_corr').value = record.brineCorr;
-            document.getElementById('brine_density').value = record.brineDensity;
-            document.getElementById('oil_fraction_owr').value = record.oilFractionOwr;
+            setVal('date', record.date);
+            setVal('report_num', record.reportNum);
+            setVal('operator', record.operator);
+            setVal('oil_density', record.oilDensity);
+            setVal('hgs_density', record.hgsDensity);
+            setVal('lgs_density', record.lgsDensity);
+            setVal('brine_corr', record.brineCorr);
+            setVal('brine_density', record.brineDensity);
+            setVal('oil_fraction_owr', record.oilFractionOwr);
 
             for(let i=1; i<=4; i++) {
-                if(record[`c${i}_hours`]) document.getElementById(`c${i}_hours`).value = record[`c${i}_hours`];
-                if(record[`c${i}_f_gpm`]) document.getElementById(`c${i}_f_gpm`).value = record[`c${i}_f_gpm`];
-                if(record[`c${i}_c_gpm`]) document.getElementById(`c${i}_c_gpm`).value = record[`c${i}_c_gpm`];
+                if(record[`c${i}_hours`]) setVal(`c${i}_hours`, record[`c${i}_hours`]);
+                if(record[`c${i}_f_gpm`]) setVal(`c${i}_f_gpm`, record[`c${i}_f_gpm`]);
+                if(record[`c${i}_c_gpm`]) setVal(`c${i}_c_gpm`, record[`c${i}_c_gpm`]);
                 
                 ['f', 'c', 'd'].forEach(p => {
-                    if(record[`c${i}_${p}_pcf`]) document.getElementById(`c${i}_${p}_pcf`).value = record[`c${i}_${p}_pcf`];
-                    if(record[`c${i}_${p}_oil`]) document.getElementById(`c${i}_${p}_oil`).value = record[`c${i}_${p}_oil`];
-                    if(record[`c${i}_${p}_water`]) document.getElementById(`c${i}_${p}_water`).value = record[`c${i}_${p}_water`];
+                    if(record[`c${i}_${p}_pcf`]) setVal(`c${i}_${p}_pcf`, record[`c${i}_${p}_pcf`]);
+                    if(record[`c${i}_${p}_oil`]) setVal(`c${i}_${p}_oil`, record[`c${i}_${p}_oil`]);
+                    if(record[`c${i}_${p}_water`]) setVal(`c${i}_${p}_water`, record[`c${i}_${p}_water`]);
                 });
             }
-            if(record.comments) document.getElementById('comments').value = record.comments;
+            if(record.comments) setVal('comments', record.comments);
             
             calculateReport();
             alert(`Record loaded for inspection parameters: ${record.date}`);
@@ -1104,75 +1119,75 @@
                 ["HALLIBURTON - SOLIDS CONTROL DAILY REPORT (COMPLETE SYSTEM DATA)"],
                 [],
                 ["SECTION 1: GENERAL DATA"],
-                ["Date", document.getElementById('date').value, "Report Number", document.getElementById('report_num').value],
-                ["Centrifuge Operator", document.getElementById('operator').value],
-                ["Oil Density (SG)", document.getElementById('oil_density').value, "Brine Corr. Factor", document.getElementById('brine_corr').value],
-                ["HGS Density (SG)", document.getElementById('hgs_density').value, "LGS Density (SG)", document.getElementById('lgs_density').value],
-                ["Brine Density", document.getElementById('brine_density').value, "Oil Fraction of OWR", document.getElementById('oil_fraction_owr').value],
-                ["Water Density (SG)", document.getElementById('water_density_static').value, "Liquid Phase Density", document.getElementById('liquid_density_static').value],
+                ["Date", getVal('date'), "Report Number", getVal('report_num')],
+                ["Centrifuge Operator", getVal('operator')],
+                ["Oil Density (SG)", getVal('oil_density'), "Brine Corr. Factor", getVal('brine_corr')],
+                ["HGS Density (SG)", getVal('hgs_density'), "LGS Density (SG)", getVal('lgs_density')],
+                ["Brine Density", getVal('brine_density'), "Oil Fraction of OWR", getVal('oil_fraction_owr')],
+                ["Water Density (SG)", getVal('water_density_static'), "Liquid Phase Density", getVal('liquid_density_static')],
                 [],
                 ["SECTION 2: SHALE SHAKERS DATA"],
                 ["Equipment", "Model", "Equipment Number", "Op. Hours", "Mesh Size", "Vol Processed (bbl)", "Vol Recovered (bbl)", "Vol Discard (bbl)"],
-                ["Shaker 1", document.getElementById('s1_model').value, document.getElementById('s1_eq').value, document.getElementById('s1_hours').value, document.getElementById('s1_mesh').value, document.getElementById('s1_vol_p').value, document.getElementById('s1_vol_r').value, document.getElementById('s1_vol_d').value],
-                ["Shaker 2", document.getElementById('s2_model').value, document.getElementById('s2_eq').value, document.getElementById('s2_hours').value, document.getElementById('s2_mesh').value, document.getElementById('s2_vol_p').value, document.getElementById('s2_vol_r').value, document.getElementById('s2_vol_d').value],
-                ["Shaker 3", document.getElementById('s3_model').value, document.getElementById('s3_eq').value, document.getElementById('s3_hours').value, document.getElementById('s3_mesh').value, document.getElementById('s3_vol_p').value, document.getElementById('s3_vol_r').value, document.getElementById('s3_vol_d').value],
-                ["Shaker 4", document.getElementById('s4_model').value, document.getElementById('s4_eq').value, document.getElementById('s4_hours').value, document.getElementById('s4_mesh').value, document.getElementById('s4_vol_p').value, document.getElementById('s4_vol_r').value, document.getElementById('s4_vol_d').value],
+                ["Shaker 1", getVal('s1_model'), getVal('s1_eq'), getVal('s1_hours'), getVal('s1_mesh'), getVal('s1_vol_p'), getVal('s1_vol_r'), getVal('s1_vol_d')],
+                ["Shaker 2", getVal('s2_model'), getVal('s2_eq'), getVal('s2_hours'), getVal('s2_mesh'), getVal('s2_vol_p'), getVal('s2_vol_r'), getVal('s2_vol_d')],
+                ["Shaker 3", getVal('s3_model'), getVal('s3_eq'), getVal('s3_hours'), getVal('s3_mesh'), getVal('s3_vol_p'), getVal('s3_vol_r'), getVal('s3_vol_d')],
+                ["Shaker 4", getVal('s4_model'), getVal('s4_eq'), getVal('s4_hours'), getVal('s4_mesh'), getVal('s4_vol_p'), getVal('s4_vol_r'), getVal('s4_vol_d')],
                 [],
                 ["SECTION 3: CENTRIFUGES OPERATIONAL DATA (PAGE 1)"],
                 ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
-                ["Model", document.getElementById('c1_model').value, "", "", document.getElementById('c2_model').value, "", "", document.getElementById('c3_model').value, "", "", document.getElementById('c4_model').value, "", ""],
-                ["Equipment Number", document.getElementById('c1_eq').value, "", "", document.getElementById('c2_eq').value, "", "", document.getElementById('c3_eq').value, "", "", document.getElementById('c4_eq').value, "", ""],
-                ["Fluid Type", document.getElementById('c1_fluid').value, "", "", document.getElementById('c2_fluid').value, "", "", document.getElementById('c3_fluid').value, "", "", document.getElementById('c4_fluid').value, "", ""],
-                ["Mode of Operation", document.getElementById('c1_mode').value, "", "", document.getElementById('c2_mode').value, "", "", document.getElementById('c3_mode').value, "", "", document.getElementById('c4_mode').value, "", ""],
-                ["Operating Hours", document.getElementById('c1_hours').value, "", "", document.getElementById('c2_hours').value, "", "", document.getElementById('c3_hours').value, "", "", document.getElementById('c4_hours').value, "", ""],
-                ["Dam Plate Setting", document.getElementById('c1_dam').value, "", "", document.getElementById('c2_dam').value, "", "", document.getElementById('c3_dam').value, "", "", document.getElementById('c4_dam').value, "", ""],
-                ["Bowl / Diff RPM", document.getElementById('c1_rpm').value, "", "", document.getElementById('c2_rpm').value, "", "", document.getElementById('c3_rpm').value, "", "", document.getElementById('c4_rpm').value, "", ""],
-                ["Rate (gpm)", document.getElementById('c1_f_gpm').value, document.getElementById('c1_c_gpm').value, document.getElementById('c1_gpm').innerText, document.getElementById('c2_f_gpm').value, document.getElementById('c2_c_gpm').value, document.getElementById('c2_gpm').innerText, document.getElementById('c3_f_gpm').value, document.getElementById('c3_c_gpm').value, document.getElementById('c3_gpm').innerText, document.getElementById('c4_f_gpm').value, document.getElementById('c4_c_gpm').value, document.getElementById('c4_gpm').innerText],
-                ["Weight (pcf)", document.getElementById('c1_f_pcf').value, document.getElementById('c1_c_pcf').value, document.getElementById('c1_d_pcf').value, document.getElementById('c2_f_pcf').value, document.getElementById('c2_c_pcf').value, document.getElementById('c2_d_pcf').value, document.getElementById('c3_f_pcf').value, document.getElementById('c3_c_pcf').value, document.getElementById('c3_d_pcf').value, document.getElementById('c4_f_pcf').value, document.getElementById('c4_c_pcf').value, document.getElementById('c4_d_pcf').value],
-                ["Weight (ppg)", document.getElementById('c1_f_ppg').value, document.getElementById('c1_c_ppg').value, document.getElementById('c1_d_ppg').value, document.getElementById('c2_f_ppg').value, document.getElementById('c2_c_ppg').value, document.getElementById('c2_d_ppg').value, document.getElementById('c3_f_ppg').value, document.getElementById('c3_c_ppg').value, document.getElementById('c3_d_ppg').value, document.getElementById('c4_f_ppg').value, document.getElementById('c4_c_ppg').value, document.getElementById('c4_d_ppg').value],
-                ["Vol Accounted (bbl)", document.getElementById('c1_f_vol').innerText, document.getElementById('c1_c_vol').innerText, document.getElementById('c1_d_vol').innerText, document.getElementById('c2_f_vol').innerText, document.getElementById('c2_c_vol').innerText, document.getElementById('c2_d_vol').innerText, document.getElementById('c3_f_vol').innerText, document.getElementById('c3_c_vol').innerText, document.getElementById('c3_d_vol').innerText, document.getElementById('c4_f_vol').innerText, document.getElementById('c4_c_vol').innerText, document.getElementById('c4_d_vol').innerText],
-                ["Skips Filled", document.getElementById('c1_skips').value, "", "", document.getElementById('c2_skips').value, "", "", document.getElementById('c3_skips').value, "", "", document.getElementById('c4_skips').value, "", ""],
+                ["Model", getVal('c1_model'), "", "", getVal('c2_model'), "", "", getVal('c3_model'), "", "", getVal('c4_model'), "", ""],
+                ["Equipment Number", getVal('c1_eq'), "", "", getVal('c2_eq'), "", "", getVal('c3_eq'), "", "", getVal('c4_eq'), "", ""],
+                ["Fluid Type", getVal('c1_fluid'), "", "", getVal('c2_fluid'), "", "", getVal('c3_fluid'), "", "", getVal('c4_fluid'), "", ""],
+                ["Mode of Operation", getVal('c1_mode'), "", "", getVal('c2_mode'), "", "", getVal('c3_mode'), "", "", getVal('c4_mode'), "", ""],
+                ["Operating Hours", getVal('c1_hours'), "", "", getVal('c2_hours'), "", "", getVal('c3_hours'), "", "", getVal('c4_hours'), "", ""],
+                ["Dam Plate Setting", getVal('c1_dam'), "", "", getVal('c2_dam'), "", "", getVal('c3_dam'), "", "", getVal('c4_dam'), "", ""],
+                ["Bowl / Diff RPM", getVal('c1_rpm'), "", "", getVal('c2_rpm'), "", "", getVal('c3_rpm'), "", "", getVal('c4_rpm'), "", ""],
+                ["Rate (gpm)", getVal('c1_f_gpm'), getVal('c1_c_gpm'), getTxt('c1_gpm'), getVal('c2_f_gpm'), getVal('c2_c_gpm'), getTxt('c2_gpm'), getVal('c3_f_gpm'), getVal('c3_c_gpm'), getTxt('c3_gpm'), getVal('c4_f_gpm'), getVal('c4_c_gpm'), getTxt('c4_gpm')],
+                ["Weight (pcf)", getVal('c1_f_pcf'), getVal('c1_c_pcf'), getVal('c1_d_pcf'), getVal('c2_f_pcf'), getVal('c2_c_pcf'), getVal('c2_d_pcf'), getVal('c3_f_pcf'), getVal('c3_c_pcf'), getVal('c3_d_pcf'), getVal('c4_f_pcf'), getVal('c4_c_pcf'), getVal('c4_d_pcf')],
+                ["Weight (ppg)", getVal('c1_f_ppg'), getVal('c1_c_ppg'), getVal('c1_d_ppg'), getVal('c2_f_ppg'), getVal('c2_c_ppg'), getVal('c2_d_ppg'), getVal('c3_f_ppg'), getVal('c3_c_ppg'), getVal('c3_d_ppg'), getVal('c4_f_ppg'), getVal('c4_c_ppg'), getVal('c4_d_ppg')],
+                ["Vol Accounted (bbl)", getTxt('c1_f_vol'), getTxt('c1_c_vol'), getTxt('c1_d_vol'), getTxt('c2_f_vol'), getTxt('c2_c_vol'), getTxt('c2_d_vol'), getTxt('c3_f_vol'), getTxt('c3_c_vol'), getTxt('c3_d_vol'), getTxt('c4_f_vol'), getTxt('c4_c_vol'), getTxt('c4_d_vol')],
+                ["Skips Filled", getVal('c1_skips'), "", "", getVal('c2_skips'), "", "", getVal('c3_skips'), "", "", getVal('c4_skips'), "", ""],
                 [],
                 ["SECTION 4: RETORT DATA"],
                 ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
-                ["Retort Oil %", document.getElementById('c1_f_oil').value, document.getElementById('c1_c_oil').value, document.getElementById('c1_d_oil').value, document.getElementById('c2_f_oil').value, document.getElementById('c2_c_oil').value, document.getElementById('c2_d_oil').value, document.getElementById('c3_f_oil').value, document.getElementById('c3_c_oil').value, document.getElementById('c3_d_oil').value, document.getElementById('c4_f_oil').value, document.getElementById('c4_c_oil').value, document.getElementById('c4_d_oil').value],
-                ["Retort Water %", document.getElementById('c1_f_water').value, document.getElementById('c1_c_water').value, document.getElementById('c1_d_water').value, document.getElementById('c2_f_water').value, document.getElementById('c2_c_water').value, document.getElementById('c2_d_water').value, document.getElementById('c3_f_water').value, document.getElementById('c3_c_water').value, document.getElementById('c3_d_water').value, document.getElementById('c4_f_water').value, document.getElementById('c4_c_water').value, document.getElementById('c4_d_water').value],
-                ["Retort Solid %", document.getElementById('c1_f_sol').innerText, document.getElementById('c1_c_sol').innerText, document.getElementById('c1_d_sol').innerText, document.getElementById('c2_f_sol').innerText, document.getElementById('c2_c_sol').innerText, document.getElementById('c2_d_sol').innerText, document.getElementById('c3_f_sol').innerText, document.getElementById('c3_c_sol').innerText, document.getElementById('c3_d_sol').innerText, document.getElementById('c4_f_sol').innerText, document.getElementById('c4_c_sol').innerText, document.getElementById('c4_d_sol').innerText],
-                ["Oil Fraction OWR", document.getElementById('c1_f_owr').value, document.getElementById('c1_c_owr').value, document.getElementById('c1_d_owr').value, document.getElementById('c2_f_owr').value, document.getElementById('c2_c_owr').value, document.getElementById('c2_d_owr').value, document.getElementById('c3_f_owr').value, document.getElementById('c3_c_owr').value, document.getElementById('c3_d_owr').value, document.getElementById('c4_f_owr').value, document.getElementById('c4_c_owr').value, document.getElementById('c4_d_owr').value],
+                ["Retort Oil %", getVal('c1_f_oil'), getVal('c1_c_oil'), getVal('c1_d_oil'), getVal('c2_f_oil'), getVal('c2_c_oil'), getVal('c2_d_oil'), getVal('c3_f_oil'), getVal('c3_c_oil'), getVal('c3_d_oil'), getVal('c4_f_oil'), getVal('c4_c_oil'), getVal('c4_d_oil')],
+                ["Retort Water %", getVal('c1_f_water'), getVal('c1_c_water'), getVal('c1_d_water'), getVal('c2_f_water'), getVal('c2_c_water'), getVal('c2_d_water'), getVal('c3_f_water'), getVal('c3_c_water'), getVal('c3_d_water'), getVal('c4_f_water'), getVal('c4_c_water'), getVal('c4_d_water')],
+                ["Retort Solid %", getTxt('c1_f_sol'), getTxt('c1_c_sol'), getTxt('c1_d_sol'), getTxt('c2_f_sol'), getTxt('c2_c_sol'), getTxt('c2_d_sol'), getTxt('c3_f_sol'), getTxt('c3_c_sol'), getTxt('c3_d_sol'), getTxt('c4_f_sol'), getTxt('c4_c_sol'), getTxt('c4_d_sol')],
+                ["Oil Fraction OWR", getVal('c1_f_owr'), getVal('c1_c_owr'), getVal('c1_d_owr'), getVal('c2_f_owr'), getVal('c2_c_owr'), getVal('c2_d_owr'), getVal('c3_f_owr'), getVal('c3_c_owr'), getVal('c3_d_owr'), getVal('c4_f_owr'), getVal('c4_c_owr'), getVal('c4_d_owr')],
                 [],
                 ["SECTION 4B: SOLIDS MASTER ANALYSIS DATA"],
-                ["Corrected Solids %", document.getElementById('p1_c1_f_ts').innerText, document.getElementById('p1_c1_c_ts').innerText, document.getElementById('p1_c1_d_ts').innerText, document.getElementById('p1_c2_f_ts').innerText, document.getElementById('p1_c2_c_ts').innerText, document.getElementById('p1_c2_d_ts').innerText, document.getElementById('p1_c3_f_ts').innerText, document.getElementById('p1_c3_c_ts').innerText, document.getElementById('p1_c3_d_ts').innerText, document.getElementById('p1_c4_f_ts').innerText, document.getElementById('p1_c4_c_ts').innerText, document.getElementById('p1_c4_d_ts').innerText],
-                ["LGS Vol (ppb)", document.getElementById('p1_c1_f_lgs').innerText, document.getElementById('p1_c1_c_lgs').innerText, document.getElementById('p1_c1_d_lgs').innerText, document.getElementById('p1_c2_f_lgs').innerText, document.getElementById('p1_c2_c_lgs').innerText, document.getElementById('p1_c2_d_lgs').innerText, document.getElementById('p1_c3_f_lgs').innerText, document.getElementById('p1_c3_c_lgs').innerText, document.getElementById('p1_c3_d_lgs').innerText, document.getElementById('p1_c4_f_lgs').innerText, document.getElementById('p1_c4_c_lgs').innerText, document.getElementById('p1_c4_d_lgs').innerText],
-                ["HGS Vol (ppb)", document.getElementById('main_c1_f_hgs').innerText, document.getElementById('main_c1_c_hgs').innerText, document.getElementById('main_c1_d_hgs').innerText, document.getElementById('main_c2_f_hgs').innerText, document.getElementById('main_c2_c_hgs').innerText, document.getElementById('main_c2_d_hgs').innerText, document.getElementById('main_c3_f_hgs').innerText, document.getElementById('main_c3_c_hgs').innerText, document.getElementById('main_c3_d_hgs').innerText, document.getElementById('main_c4_f_hgs').innerText, document.getElementById('main_c4_c_hgs').innerText, document.getElementById('main_c4_d_hgs').innerText],
+                ["Corrected Solids %", getTxt('p1_c1_f_ts'), getTxt('p1_c1_c_ts'), getTxt('p1_c1_d_ts'), getTxt('p1_c2_f_ts'), getTxt('p1_c2_c_ts'), getTxt('p1_c2_d_ts'), getTxt('p1_c3_f_ts'), getTxt('p1_c3_c_ts'), getTxt('p1_c3_d_ts'), getTxt('p1_c4_f_ts'), getTxt('p1_c4_c_ts'), getTxt('p1_c4_d_ts')],
+                ["LGS Vol (ppb)", getTxt('p1_c1_f_lgs'), getTxt('p1_c1_c_lgs'), getTxt('p1_c1_d_lgs'), getTxt('p1_c2_f_lgs'), getTxt('p1_c2_c_lgs'), getTxt('p1_c2_d_lgs'), getTxt('p1_c3_f_lgs'), getTxt('p1_c3_c_lgs'), getTxt('p1_c3_d_lgs'), getTxt('p1_c4_f_lgs'), getTxt('p1_c4_c_lgs'), getTxt('p1_c4_d_lgs')],
+                ["HGS Vol (ppb)", getTxt('main_c1_f_hgs'), getTxt('main_c1_c_hgs'), getTxt('main_c1_d_hgs'), getTxt('main_c2_f_hgs'), getTxt('main_c2_c_hgs'), getTxt('main_c2_d_hgs'), getTxt('main_c3_f_hgs'), getTxt('main_c3_c_hgs'), getTxt('main_c3_d_hgs'), getTxt('main_c4_f_hgs'), getTxt('main_c4_c_hgs'), getTxt('main_c4_d_hgs')],
                 [],
                 ["SECTION 5: VOLUME DISCHARGED BREAKDOWN"],
                 ["Parameter", "Centrifuge #1", "Centrifuge #2", "Centrifuge #3", "Centrifuge #4"],
-                ["Total Mud Lost (bbl)", document.getElementById('b1_mud').innerText, document.getElementById('b2_mud').innerText, document.getElementById('b3_mud').innerText, document.getElementById('b4_mud').innerText],
-                ["Oil Vol Lost (bbl)", document.getElementById('b1_oil').innerText, document.getElementById('b2_oil').innerText, document.getElementById('b3_oil').innerText, document.getElementById('b4_oil').innerText],
-                ["Water Vol Lost (bbl)", document.getElementById('b1_water').innerText, document.getElementById('b2_water').innerText, document.getElementById('b3_water').innerText, document.getElementById('b4_water').innerText],
-                ["Solids Vol Lost (bbl)", document.getElementById('b1_sol').innerText, document.getElementById('b2_sol').innerText, document.getElementById('b3_sol').innerText, document.getElementById('b4_sol').innerText],
-                ["LGS Vol (bbl)", document.getElementById('b1_lgs').innerText, document.getElementById('b2_lgs').innerText, document.getElementById('b3_lgs').innerText, document.getElementById('b4_lgs').innerText],
-                ["HGS Vol (bbl)", document.getElementById('b1_hgs').innerText, document.getElementById('b2_hgs').innerText, document.getElementById('b3_hgs').innerText, document.getElementById('b4_hgs').innerText],
-                ["Skips Discharged", document.getElementById('b1_skips_out').innerText, document.getElementById('b2_skips_out').innerText, document.getElementById('b3_skips_out').innerText, document.getElementById('b4_skips_out').innerText],
+                ["Total Mud Lost (bbl)", getTxt('b1_mud'), getTxt('b2_mud'), getTxt('b3_mud'), getTxt('b4_mud')],
+                ["Oil Vol Lost (bbl)", getTxt('b1_oil'), getTxt('b2_oil'), getTxt('b3_oil'), getTxt('b4_oil')],
+                ["Water Vol Lost (bbl)", getTxt('b1_water'), getTxt('b2_water'), getTxt('b3_water'), getTxt('b4_water')],
+                ["Solids Vol Lost (bbl)", getTxt('b1_sol'), getTxt('b2_sol'), getTxt('b3_sol'), getTxt('b4_sol')],
+                ["LGS Vol (bbl)", getTxt('b1_lgs'), getTxt('b2_lgs'), getTxt('b3_lgs'), getTxt('b4_lgs')],
+                ["HGS Vol (bbl)", getTxt('b1_hgs'), getTxt('b2_hgs'), getTxt('b3_hgs'), getTxt('b4_hgs')],
+                ["Skips Discharged", getTxt('b1_skips_out'), getTxt('b2_skips_out'), getTxt('b3_skips_out'), getTxt('b4_skips_out')],
                 [],
                 ["SECTION 6: PAGE 2 MASS BALANCE ANALYTICS"],
-                ["Total Solids (bbl)", document.getElementById('m2_c1_f_ts').innerText, document.getElementById('m2_c1_c_ts').innerText, document.getElementById('m2_c1_d_ts').innerText, document.getElementById('m2_c2_f_ts').innerText, document.getElementById('m2_c2_c_ts').innerText, document.getElementById('m2_c2_d_ts').innerText, document.getElementById('m2_c3_f_ts').innerText, document.getElementById('m2_c3_c_ts').innerText, document.getElementById('m2_c3_d_ts').innerText, document.getElementById('m2_c4_f_ts').innerText, document.getElementById('m2_c4_c_ts').innerText, document.getElementById('m2_c4_d_ts').innerText],
+                ["Total Solids (bbl)", getTxt('m2_c1_f_ts'), getTxt('m2_c1_c_ts'), getTxt('m2_c1_d_ts'), getTxt('m2_c2_f_ts'), getTxt('m2_c2_c_ts'), getTxt('m2_c2_d_ts'), getTxt('m2_c3_f_ts'), getTxt('m2_c3_c_ts'), getTxt('m2_c3_d_ts'), getTxt('m2_c4_f_ts'), getTxt('m2_c4_c_ts'), getTxt('m2_c4_d_ts')],
                 [],
                 ["SECTION 7: FLOW METRICS BY VOLUME (gpm)"],
-                ["Oil (gpm)", document.getElementById('v_c1_f_oil').innerText, document.getElementById('v_c1_c_oil').innerText, document.getElementById('v_c1_d_oil').innerText, document.getElementById('v_c2_f_oil').innerText, document.getElementById('v_c2_c_oil').innerText, document.getElementById('v_c2_d_oil').innerText, document.getElementById('v_c3_f_oil').innerText, document.getElementById('v_c3_c_oil').innerText, document.getElementById('v_c3_d_oil').innerText, document.getElementById('v_c4_f_oil').innerText, document.getElementById('v_c4_c_oil').innerText, document.getElementById('v_c4_d_oil').innerText],
-                ["Water (gpm)", document.getElementById('v_c1_f_wtr').innerText, document.getElementById('v_c1_c_wtr').innerText, document.getElementById('v_c1_d_wtr').innerText, document.getElementById('v_c2_f_wtr').innerText, document.getElementById('v_c2_c_wtr').innerText, document.getElementById('v_c2_d_wtr').innerText, document.getElementById('v_c3_f_wtr').innerText, document.getElementById('v_c3_c_wtr').innerText, document.getElementById('v_c3_d_wtr').innerText, document.getElementById('v_c4_f_wtr').innerText, document.getElementById('w_c4_c_wtr').innerText, document.getElementById('v_c4_d_wtr').innerText],
+                ["Oil (gpm)", getTxt('v_c1_f_oil'), getTxt('v_c1_c_oil'), getTxt('v_c1_d_oil'), getTxt('v_c2_f_oil'), getTxt('v_c2_c_oil'), getTxt('v_c2_d_oil'), getTxt('v_c3_f_oil'), getTxt('v_c3_c_oil'), getTxt('v_c3_d_oil'), getTxt('v_c4_f_oil'), getTxt('v_c4_c_oil'), getTxt('v_c4_d_oil')],
+                ["Water (gpm)", getTxt('v_c1_f_wtr'), getTxt('v_c1_c_wtr'), getTxt('v_c1_d_wtr'), getTxt('v_c2_f_wtr'), getTxt('v_c2_c_wtr'), getTxt('v_c2_d_wtr'), getTxt('v_c3_f_wtr'), getTxt('v_c3_c_wtr'), getTxt('v_c3_d_wtr'), getTxt('v_c4_f_wtr'), getTxt('w_c4_c_wtr'), getTxt('v_c4_d_wtr')],
                 [],
                 ["SECTION 8: FLOW METRICS BY WEIGHT (kg/min)"],
-                ["Oil (kg/min)", document.getElementById('w_c1_f_oil').innerText, document.getElementById('w_c1_c_oil').innerText, document.getElementById('w_c1_d_oil').innerText, document.getElementById('w_c2_f_oil').innerText, document.getElementById('w_c2_c_oil').innerText, document.getElementById('w_c2_d_oil').innerText, document.getElementById('w_c3_f_oil').innerText, document.getElementById('w_c3_c_oil').innerText, document.getElementById('w_c3_d_oil').innerText, document.getElementById('w_c4_f_oil').innerText, document.getElementById('w_c4_c_oil').innerText, document.getElementById('w_c4_d_oil').innerText],
-                ["Water (kg/min)", document.getElementById('w_c1_f_wtr').innerText, document.getElementById('w_c1_c_wtr').innerText, document.getElementById('w_c1_d_wtr').innerText, document.getElementById('w_c2_f_wtr').innerText, document.getElementById('w_c2_c_wtr').innerText, document.getElementById('w_c2_d_wtr').innerText, document.getElementById('w_c3_f_wtr').innerText, document.getElementById('w_c3_c_wtr').innerText, document.getElementById('w_c3_d_wtr').innerText, document.getElementById('w_c4_f_wtr').innerText, document.getElementById('w_c4_c_wtr').innerText, document.getElementById('w_c4_d_wtr').innerText],
+                ["Oil (kg/min)", getTxt('w_c1_f_oil'), getTxt('w_c1_c_oil'), getTxt('w_c1_d_oil'), getTxt('w_c2_f_oil'), getTxt('w_c2_c_oil'), getTxt('w_c2_d_oil'), getTxt('w_c3_f_oil'), getTxt('w_c3_c_oil'), getTxt('w_c3_d_oil'), getTxt('w_c4_f_oil'), getTxt('w_c4_c_oil'), getTxt('w_c4_d_oil')],
+                ["Water (kg/min)", getTxt('w_c1_f_wtr'), getTxt('w_c1_c_wtr'), getTxt('w_c1_d_wtr'), getTxt('w_c2_f_wtr'), getTxt('w_c2_c_wtr'), getTxt('w_c2_d_wtr'), getTxt('w_c3_f_wtr'), getTxt('w_c3_c_wtr'), getTxt('w_c3_d_wtr'), getTxt('w_c4_f_wtr'), getTxt('w_c4_c_wtr'), getTxt('w_c4_d_wtr')],
                 [],
                 ["SECTION 9: SYSTEM EFFICIENCIES"],
-                ["Dual HGS Recovered %", document.getElementById('eff_dual_hgs').innerText, "Dual LGS Discard %", document.getElementById('eff_dual_lgs').innerText],
-                ["Indiv HGS Recovered %", document.getElementById('eff_ind_hgs').innerText, "Indiv LGS Discard %", document.getElementById('eff_ind_lgs').innerText],
-                ["Solids Removal Mode HGS Discard %", document.getElementById('sol_rem_hgs').innerText, "Solids Removal Mode LGS Discard %", document.getElementById('sol_rem_lgs').innerText],
+                ["Dual HGS Recovered %", getTxt('eff_dual_hgs'), "Dual LGS Discard %", getTxt('eff_dual_lgs')],
+                ["Indiv HGS Recovered %", getTxt('eff_ind_hgs'), "Indiv LGS Discard %", getTxt('eff_ind_lgs')],
+                ["Solids Removal Mode HGS Discard %", getTxt('sol_rem_hgs'), "Solids Removal Mode LGS Discard %", getTxt('sol_rem_lgs')],
                 [],
                 ["COMMENTS / ANNOTATIONS"],
-                [document.getElementById('comments').value]
+                [getVal('comments')]
             ];
         }
 
@@ -1181,10 +1196,18 @@
             const csvString = "data:text/csv;charset=utf-8," + data.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
             const dlAnchor = document.createElement('a');
             dlAnchor.setAttribute("href", encodeURI(csvString));
-            dlAnchor.setAttribute("download", `Solids_Control_System_Report_No_${document.getElementById('report_num').value}.csv`);
+            dlAnchor.setAttribute("download", `Solids_Control_System_Report_No_${getVal('report_num')}.csv`);
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
+        }
+
+        function exportExcel() {
+            const data = gatherDataset();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, ws, "System Analytics Logs");
+            XLSX.writeFile(workbook, `Solids_Control_System_Report_No_${getVal('report_num')}.xlsx`);
         }
 
         // Run system calculations on initialization loop
