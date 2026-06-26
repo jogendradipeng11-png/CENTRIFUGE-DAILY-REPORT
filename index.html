@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solids Control Daily Report - LMP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            .no-print { display: none !important; }
+            .print-container { box-shadow: none !important; max-width: 100% !important; border: none !important; padding: 0 !important; }
+            input, select { border: none !important; background: transparent !important; appearance: none; }
+        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .table-header { background-color: #b91c1c; color: white; font-weight: bold; font-size: 0.75rem; text-align: center; text-transform: uppercase; padding: 2px; tracking-wider; }
+    </style>
+</head>
+<body class="bg-gray-100 p-2 sm:p-6 text-gray-900 min-h-screen antialiased">
+
+    <div class="max-w-7xl mx-auto bg-white border border-gray-300 p-4 rounded shadow-md print-container">
+        
+        <div class="flex justify-between items-center border-b border-red-700 pb-2 mb-4">
+            <div class="flex items-baseline">
+                <span class="text-red-700 font-black text-xl tracking-tighter">HALLIBURTON</span>
+                <span class="text-gray-400 text-[10px] ml-1 font-semibold">Baroid</span>
+            </div>
+            <h1 class="text-base font-bold text-red-700 uppercase tracking-wide">Solids Control Daily Report - LMP</h1>
+            <div class="space-x-1 no-print flex items-center">
+                <button onclick="saveCurrentToHistory()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer shadow-sm">Save to History</button>
+                <button onclick="openFinalReportModal()" class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer shadow-sm">View Final Report (Page 2)</button>
+                <button onclick="exportCSV()" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer shadow-sm">Export CSV</button>
+                <button onclick="exportExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer shadow-sm">Export Excel</button>
+                <button onclick="window.print()" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer shadow-sm">Print / PDF</button>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="table-header">General Data</div>
+            <div class="grid grid-cols-3 gap-y-px bg-gray-300 border border-gray-300 text-[11px]">
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Date (DD-MM-YYYY)</span><input type="text" id="date" value="15/Mar/25" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Oil Density (SG)</span><input type="number" id="oil_density" value="0.84" step="0.01" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center" oninput="calculateReport()"></div>
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">HGS Density (SG)</span><input type="number" id="hgs_density" value="4.2" step="0.1" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center" oninput="calculateReport()"></div>
+                
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Report Number</span><input type="text" id="report_num" value="256" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Brine Corr. Factor</span><input type="number" id="brine_corr" value="1" step="0.01" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">LGS Density (SG)</span><input type="number" id="lgs_density" value="2.6" step="0.1" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center" oninput="calculateReport()"></div>
+                
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Centrifuge Operator</span><input type="text" id="operator" value="Bilal haider" class="w-1/2 p-1 focus:bg-yellow-50 outline-none px-2"></div>
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Brine Density</span><input type="number" id="brine_density" value="1.16" step="0.01" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
+                <div class="flex bg-white"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Oil Fraction of OWR</span><input type="number" id="oil_fraction_owr" value="0.80" step="0.01" class="w-1/2 p-1 focus:bg-yellow-50 outline-none text-center"></div>
+                
+                <div class="flex bg-white col-start-2"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Water Density (SG)</span><input type="text" id="water_density_static" value="1" readonly class="w-1/2 p-1 bg-gray-50 text-center outline-none"></div>
+                <div class="flex bg-white col-start-3"><span class="w-1/2 text-red-700 font-medium p-1 border-r border-gray-200">Liquid Phase Density</span><input type="text" id="liquid_density_static" value="0.90" readonly class="w-1/2 p-1 bg-gray-50 text-center outline-none"></div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="table-header">Shale Shakers Data</div>
+            <table class="w-full text-center border-collapse border border-gray-300 text-[10px]">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-300 text-red-700 font-semibold">
+                        <th class="p-1 border-r border-gray-300 w-1/5"></th>
+                        <th class="p-1 border-r border-gray-300 w-1/5">Model</th>
+                        <th class="p-1 border-r border-gray-300 w-1/5">Equipment Number</th>
+                        <th class="p-1 border-r border-gray-300 w-1/12">Op. Hours</th>
+                        <th class="p-1 border-r border-gray-300 w-1/12">Mesh Size</th>
+                        <th class="p-1 border-r border-gray-300">Vol Processed (bbl.)</th>
+                        <th class="p-1 border-r border-gray-300">Vol Recovered (bbl.)</th>
+                        <th class="p-1">Vol Discard (bbl.)</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Shaker 1</td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s1_model" value="FLC-513" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s1_eq" value="11655171" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s1_hours" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s1_mesh" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s1_vol_p" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s1_vol_r" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0"><input type="number" id="s1_vol_d" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Shaker 2</td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s2_model" value="FLC-504" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s2_eq" value="12223641" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s2_hours" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s2_mesh" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s2_vol_p" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s2_vol_r" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0"><input type="number" id="s2_vol_d" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Shaker 3</td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s3_model" value="FLC-504" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s3_eq" value="12266736" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s3_hours" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s3_mesh" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s3_vol_p" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s3_vol_r" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0"><input type="number" id="s3_vol_d" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Shaker 4</td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s4_model" value="FLC-504" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s4_eq" value="12266733" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s4_hours" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="text" id="s4_mesh" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s4_vol_p" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-200"><input type="number" id="s4_vol_r" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0"><input type="number" id="s4_vol_d" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-4 overflow-x-auto">
+            <div class="table-header">Centrifuges Operational Data</div>
+            <table class="w-full text-center border-collapse border border-gray-300 text-[10px]" id="operational_table">
+                <thead>
+                    <tr class="bg-gray-100 border-b border-gray-300 font-bold">
+                        <th class="p-1 border-r border-gray-300 w-44"></th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 text-red-700 bg-red-50">CENTRIFUGE #1</th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 text-red-700 bg-gray-50">CENTRIFUGE #2</th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 text-red-700 bg-red-50">CENTRIFUGE #3</th>
+                        <th colspan="3" class="p-1 text-red-700 bg-gray-50">CENTRIFUGE #4</th>
+                    </tr>
+                    <tr class="bg-white border-b border-gray-300 font-medium text-red-600">
+                        <th class="p-1 border-r border-gray-300"></th>
+                        <th class="p-1 border-r border-gray-100 bg-red-50/50">Feed</th><th class="p-1 border-r border-gray-100 bg-red-50/50">Centrate</th><th class="p-1 border-r border-gray-300 bg-red-50/50">Discard</th>
+                        <th class="p-1 border-r border-gray-100 bg-gray-50/50">Feed</th><th class="p-1 border-r border-gray-100 bg-gray-50/50">Centrate</th><th class="p-1 border-r border-gray-300 bg-gray-50/50">Discard</th>
+                        <th class="p-1 border-r border-gray-100 bg-red-50/50">Feed</th><th class="p-1 border-r border-gray-100 bg-red-50/50">Centrate</th><th class="p-1 border-r border-gray-300 bg-red-50/50">Discard</th>
+                        <th class="p-1 border-r border-gray-100 bg-gray-50/50">Feed</th><th class="p-1 border-r border-gray-100 bg-gray-50/50">Centrate</th><th class="p-1">Discard</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Model</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c1_model" value="BC-20 VFD" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c2_model" value="BC-20 VFD" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c3_model" value="BC-20 VFD" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0"><input type="text" id="c4_model" value="BC-20 VFD" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Equipment Number</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c1_eq" value="A-01/13188756" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c2_eq" value="A-02/13209685" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c3_eq" value="B-01/13236064" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0"><input type="text" id="c4_eq" value="B-02/13317666" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Fluid Type</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300 bg-gray-50">
+                            <select id="c1_fluid" class="w-full p-1 text-center bg-transparent outline-none" onchange="calculateReport()">
+                                <option value="OIL BASE MUD" selected>OIL BASE MUD</option>
+                                <option value="WATER BASE MUD">WATER BASE MUD</option>
+                            </select>
+                        </td>
+                        <td colspan="3" class="p-0 border-r border-gray-300 bg-gray-50">
+                            <select id="c2_fluid" class="w-full p-1 text-center bg-transparent outline-none" onchange="calculateReport()">
+                                <option value="OIL BASE MUD" selected>OIL BASE MUD</option>
+                                <option value="WATER BASE MUD">WATER BASE MUD</option>
+                            </select>
+                        </td>
+                        <td colspan="3" class="p-0 border-r border-gray-300 bg-gray-50">
+                            <select id="c3_fluid" class="w-full p-1 text-center bg-transparent outline-none" onchange="calculateReport()">
+                                <option value="OIL BASE MUD" selected>OIL BASE MUD</option>
+                                <option value="WATER BASE MUD">WATER BASE MUD</option>
+                            </select>
+                        </td>
+                        <td colspan="3" class="p-0 bg-gray-50">
+                            <select id="c4_fluid" class="w-full p-1 text-center bg-transparent outline-none" onchange="calculateReport()">
+                                <option value="OIL BASE MUD" selected>OIL BASE MUD</option>
+                                <option value="WATER BASE MUD">WATER BASE MUD</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Mode of Operation</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300">
+                            <select id="c1_mode" class="w-full p-1 text-center outline-none" onchange="calculateReport()">
+                                <option value="SOLIDS REMOVAL" selected>SOLIDS REMOVAL</option>
+                                <option value="BARITE RECOVERY">BARITE RECOVERY</option>
+                            </select>
+                        </td>
+                        <td colspan="3" class="p-0 border-r border-gray-300">
+                            <select id="c2_mode" class="w-full p-1 text-center outline-none" onchange="calculateReport()">
+                                <option value="SOLIDS REMOVAL" selected>SOLIDS REMOVAL</option>
+                                <option value="BARITE RECOVERY">BARITE RECOVERY</option>
+                            </select>
+                        </td>
+                        <td colspan="3" class="p-0 border-r border-gray-300">
+                            <select id="c3_mode" class="w-full p-1 text-center outline-none" onchange="calculateReport()">
+                                <option value="SOLIDS REMOVAL" selected>SOLIDS REMOVAL</option>
+                                <option value="BARITE RECOVERY">BARITE RECOVERY</option>
+                            </select>
+                        </td>
+                        <td colspan="3" class="p-0">
+                            <select id="c4_mode" class="w-full p-1 text-center outline-none" onchange="calculateReport()">
+                                <option value="SOLIDS REMOVAL" selected>SOLIDS REMOVAL</option>
+                                <option value="BARITE RECOVERY">BARITE RECOVERY</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Operating Hours</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c1_hours" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c2_hours" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c3_hours" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td colspan="3" class="p-0"><input type="number" id="c4_hours" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Dam Plate Setting</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c1_dam" value="5" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c2_dam" value="6" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c3_dam" value="3" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0"><input type="number" id="c4_dam" value="6" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Bowl RPM / Differential RPM</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c1_rpm" value="2500/30" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c2_rpm" value="2500/30" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="text" id="c3_rpm" value="2500/30" class="w-full p-1 text-center outline-none"></td>
+                        <td colspan="3" class="p-0"><input type="text" id="c4_rpm" value="2500/30" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200 font-medium">
+                        <td class="p-1 text-left text-red-700 border-r border-gray-300 pl-2">Feed / Centrate / Discard Rate (gpm)</td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_f_gpm" value="25" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_c_gpm" value="19.2" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-1 border-r border-gray-300 bg-gray-50 font-bold text-center" id="c1_gpm">5.8</td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_f_gpm" value="25" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_c_gpm" value="19.6" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-1 border-r border-gray-300 bg-gray-50 font-bold text-center" id="c2_gpm">5.4</td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_f_gpm" value="25" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_c_gpm" value="19.3" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-1 border-r border-gray-300 bg-gray-50 font-bold text-center" id="c3_gpm">5.7</td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_f_gpm" value="25" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_c_gpm" value="19.3" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-1 bg-gray-50 font-bold text-center" id="c4_gpm">5.7</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Feed / Centrate / Discard Wt. (pcf)</td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_f_pcf" value="97" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_c_pcf" value="79" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c1_d_pcf" value="156" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_f_pcf" value="97" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_c_pcf" value="80" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c2_d_pcf" value="158" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_f_pcf" value="97" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_c_pcf" value="79" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c3_d_pcf" value="158" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_f_pcf" value="97" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_c_pcf" value="80" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0"><input type="number" id="c4_d_pcf" value="155" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Feed / Centrate / Discard Wt. (ppg)</td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c1_f_ppg" value="12.97" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c1_c_ppg" value="10.56" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" step="0.01" id="c1_d_ppg" value="20.85" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c2_f_ppg" value="12.97" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c2_c_ppg" value="10.69" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" step="0.01" id="c2_d_ppg" value="21.12" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c3_f_ppg" value="12.97" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c3_c_ppg" value="10.56" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" step="0.01" id="c3_d_ppg" value="21.1" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c4_f_ppg" value="13.0" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" step="0.01" id="c4_c_ppg" value="10.7" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0"><input type="number" step="0.01" id="c4_d_ppg" value="20.7" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200 font-bold bg-gray-50/50">
+                        <td class="p-1 text-left text-red-700 border-r border-gray-300 pl-2">Vol. Accounted (bbl.)</td>
+                        <td class="p-1 border-r border-gray-100 text-center" id="c1_f_vol">220</td>
+                        <td class="p-1 border-r border-gray-100 text-center" id="c1_c_vol">170</td>
+                        <td class="p-1 border-r border-gray-300 text-center text-red-700" id="c1_d_vol">50</td>
+                        
+                        <td class="p-1 border-r border-gray-100 text-center" id="c2_f_vol">210</td>
+                        <td class="p-1 border-r border-gray-100 text-center" id="c2_c_vol">164</td>
+                        <td class="p-1 border-r border-gray-300 text-center text-red-700" id="c2_d_vol">46</td>
+                        
+                        <td class="p-1 border-r border-gray-100 text-center" id="c3_f_vol">200</td>
+                        <td class="p-1 border-r border-gray-100 text-center" id="c3_c_vol">157</td>
+                        <td class="p-1 border-r border-gray-300 text-center text-red-700" id="c3_d_vol">43</td>
+                        
+                        <td class="p-1 border-r border-gray-100 text-center" id="c4_f_vol">210</td>
+                        <td class="p-1 border-r border-gray-100 text-center" id="c4_c_vol">163</td>
+                        <td class="p-1 text-center text-red-700" id="c4_d_vol">47</td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Skips Filled</td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c1_skips" value="5" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c2_skips" value="5" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td colspan="3" class="p-0 border-r border-gray-300"><input type="number" id="c3_skips" value="4" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td colspan="3" class="p-0"><input type="number" id="c4_skips" value="5" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-4 overflow-x-auto">
+            <div class="table-header">Retort Data</div>
+            <table class="w-full text-center border-collapse border border-gray-300 text-[10px]" id="retort_table">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-300 font-semibold text-red-700">
+                        <th class="p-1 border-r border-gray-300 w-44"></th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 bg-red-50/50">CENTRIFUGE #1</th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 bg-gray-50/50">CENTRIFUGE #2</th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 bg-red-50/50">CENTRIFUGE #3</th>
+                        <th colspan="3" class="p-1 bg-gray-50/50">CENTRIFUGE #4</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Retort Oil %</td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_f_oil" value="55" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_c_oil" value="67.1" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c1_d_oil" value="26.1" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_f_oil" value="55" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_c_oil" value="66" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c2_d_oil" value="26.2" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_f_oil" value="55" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_c_oil" value="67.2" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c3_d_oil" value="26.2" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_f_oil" value="55" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_c_oil" value="66" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0"><input type="number" id="c4_d_oil" value="26.6" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Retort Water %</td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_f_water" value="14" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_c_water" value="13.1" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c1_d_water" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_f_water" value="14" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_c_water" value="14" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c2_d_water" value="8.1" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_f_water" value="14" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_c_water" value="13" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c3_d_water" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_f_water" value="14" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_c_water" value="14" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                        <td class="p-0"><input type="number" id="c4_d_water" value="8" class="w-full p-1 text-center outline-none" oninput="calculateReport()"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200 font-semibold bg-gray-50/50">
+                        <td class="p-1 text-left text-red-700 border-r border-gray-300 pl-2">Retort Solid %</td>
+                        <td class="p-1 border-r border-gray-100" id="c1_f_sol">31.0</td><td class="p-1 border-r border-gray-100" id="c1_c_sol">19.8</td><td class="p-1 border-r border-gray-300" id="c1_d_sol">65.9</td>
+                        <td class="p-1 border-r border-gray-100" id="c2_f_sol">31.0</td><td class="p-1 border-r border-gray-100" id="c2_c_sol">20.0</td><td class="p-1 border-r border-gray-300" id="c2_d_sol">65.7</td>
+                        <td class="p-1 border-r border-gray-100" id="c3_f_sol">31.0</td><td class="p-1 border-r border-gray-100" id="c3_c_sol">19.8</td><td class="p-1 border-r border-gray-300" id="c3_d_sol">65.8</td>
+                        <td class="p-1 border-r border-gray-100" id="c4_f_sol">31.0</td><td class="p-1 border-r border-gray-100" id="c4_c_sol">20.0</td><td class="p-1" id="c4_d_sol">65.4</td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Oil fraction from OWR</td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_f_owr" step="0.01" value="0.80" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c1_c_owr" step="0.01" value="0.84" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c1_d_owr" step="0.01" value="0.77" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_f_owr" step="0.01" value="0.80" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c2_c_owr" step="0.01" value="0.83" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c2_d_owr" step="0.01" value="0.76" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_f_owr" step="0.01" value="0.80" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c3_c_owr" step="0.01" value="0.84" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-300"><input type="number" id="c3_d_owr" step="0.01" value="0.77" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_f_owr" step="0.01" value="0.80" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0 border-r border-gray-100"><input type="number" id="c4_c_owr" step="0.01" value="0.83" class="w-full p-1 text-center outline-none"></td>
+                        <td class="p-0"><input type="number" id="c4_d_owr" step="0.01" value="0.77" class="w-full p-1 text-center outline-none"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-4 overflow-x-auto">
+            <div class="table-header">Solids Analysis Data</div>
+            <table class="w-full text-center border-collapse border border-gray-300 text-[10px]" id="solids_analysis_master_table">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-300 font-semibold text-red-700">
+                        <th class="p-1 border-r border-gray-300 w-44"></th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 bg-red-50/50">CENTRIFUGE #1</th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 bg-gray-50/50">CENTRIFUGE #2</th>
+                        <th colspan="3" class="p-1 border-r border-gray-300 bg-red-50/50">CENTRIFUGE #3</th>
+                        <th colspan="3" class="p-1 bg-gray-50/50">CENTRIFUGE #4</th>
+                    </tr>
+                    <tr class="bg-white border-b border-gray-300 font-medium text-red-600">
+                        <th class="p-1 border-r border-gray-300 text-left pl-2">Analysis Metric Parameter</th>
+                        <th class="p-1 border-r border-gray-100 bg-red-50/20">Feed</th><th class="p-1 border-r border-gray-100 bg-red-50/20">Centrate</th><th class="p-1 border-r border-gray-300 bg-red-50/20">Discard</th>
+                        <th class="p-1 border-r border-gray-100 bg-gray-50/20">Feed</th><th class="p-1 border-r border-gray-100 bg-gray-50/20">Centrate</th><th class="p-1 border-r border-gray-300 bg-gray-50/20">Discard</th>
+                        <th class="p-1 border-r border-gray-100 bg-red-50/20">Feed</th><th class="p-1 border-r border-gray-100 bg-red-50/20">Centrate</th><th class="p-1 border-r border-gray-300 bg-red-50/20">Discard</th>
+                        <th class="p-1 border-r border-gray-100 bg-gray-50/20">Feed</th><th class="p-1 border-r border-gray-100 bg-gray-50/20">Centrate</th><th class="p-1 bg-gray-50/20">Discard</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Corrected Solids %</td>
+                        <td id="p1_c1_f_ts" class="p-1 border-r border-gray-100 font-semibold bg-gray-50/30"></td><td id="p1_c1_c_ts" class="p-1 border-r border-gray-100"></td><td id="p1_c1_d_ts" class="p-1 border-r border-gray-300 font-bold"></td>
+                        <td id="p1_c2_f_ts" class="p-1 border-r border-gray-100 font-semibold bg-gray-50/30"></td><td id="p1_c2_c_ts" class="p-1 border-r border-gray-100"></td><td id="p1_c2_d_ts" class="p-1 border-r border-gray-300 font-bold"></td>
+                        <td id="p1_c3_f_ts" class="p-1 border-r border-gray-100 font-semibold bg-gray-50/30"></td><td id="p1_c3_c_ts" class="p-1 border-r border-gray-100"></td><td id="p1_c3_d_ts" class="p-1 border-r border-gray-300 font-bold"></td>
+                        <td id="p1_c4_f_ts" class="p-1 border-r border-gray-100 font-semibold bg-gray-50/30"></td><td id="p1_c4_c_ts" class="p-1 border-r border-gray-100"></td><td id="p1_c4_d_ts" class="p-1 font-bold"></td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Avg. Spec Gravity (SG)</td>
+                        <td id="p1_c1_f_sg" class="p-1 border-r border-gray-100">2.760</td><td id="p1_c1_c_sg" class="p-1 border-r border-gray-100">2.882</td><td id="p1_c1_d_sg" class="p-1 border-r border-gray-300">3.337</td>
+                        <td id="p1_c2_f_sg" class="p-1 border-r border-gray-100">3.069</td><td id="p1_c2_c_sg" class="p-1 border-r border-gray-100">2.934</td><td id="p1_c2_d_sg" class="p-1 border-r border-gray-300">3.393</td>
+                        <td id="p1_c3_f_sg" class="p-1 border-r border-gray-100">3.069</td><td id="p1_c3_c_sg" class="p-1 border-r border-gray-100">2.882</td><td id="p1_c3_d_sg" class="p-1 border-r border-gray-300">3.389</td>
+                        <td id="p1_c4_f_sg" class="p-1 border-r border-gray-100">3.069</td><td id="p1_c4_c_sg" class="p-1 border-r border-gray-100">2.934</td><td id="p1_c4_d_sg" class="p-1">3.332</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">LGS %</td>
+                        <td id="p1_c1_f_lgs_pct" class="p-1 border-r border-gray-100">32.4</td><td id="p1_c1_c_lgs_pct" class="p-1 border-r border-gray-100">16.3</td><td id="p1_c1_d_lgs_pct" class="p-1 border-r border-gray-300 text-amber-800">35.5</td>
+                        <td id="p1_c2_f_lgs_pct" class="p-1 border-r border-gray-100">21.9</td><td id="p1_c2_c_lgs_pct" class="p-1 border-r border-gray-100">15.8</td><td id="p1_c2_d_lgs_pct" class="p-1 border-r border-gray-300 text-amber-800">33.1</td>
+                        <td id="p1_c3_f_lgs_pct" class="p-1 border-r border-gray-100">21.9</td><td id="p1_c3_c_lgs_pct" class="p-1 border-r border-gray-100">16.3</td><td id="p1_c3_d_lgs_pct" class="p-1 border-r border-gray-300 text-amber-800">33.3</td>
+                        <td id="p1_c4_f_lgs_pct" class="p-1 border-r border-gray-100">21.9</td><td id="p1_c4_c_lgs_pct" class="p-1 border-r border-gray-100">15.8</td><td id="p1_c4_d_lgs_pct" class="p-1 text-amber-800">35.5</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">LGS (ppb)</td>
+                        <td id="p1_c1_f_lgs" class="p-1 border-r border-gray-100">295.3</td><td id="p1_c1_c_lgs" class="p-1 border-r border-gray-100">148.7</td><td id="p1_c1_d_lgs" class="p-1 border-r border-gray-300 font-medium text-amber-900">323.9</td>
+                        <td id="p1_c2_f_lgs" class="p-1 border-r border-gray-100">199.7</td><td id="p1_c2_c_lgs" class="p-1 border-r border-gray-100">144.2</td><td id="p1_c2_d_lgs" class="p-1 border-r border-gray-300 font-medium text-amber-900">301.9</td>
+                        <td id="p1_c3_f_lgs" class="p-1 border-r border-gray-100">199.7</td><td id="p1_c3_c_lgs" class="p-1 border-r border-gray-100">148.6</td><td id="p1_c3_d_lgs" class="p-1 border-r border-gray-300 font-medium text-amber-900">303.8</td>
+                        <td id="p1_c4_f_lgs" class="p-1 border-r border-gray-100">199.7</td><td id="p1_c4_c_lgs" class="p-1 border-r border-gray-100">144.2</td><td id="p1_c4_d_lgs" class="p-1 font-medium text-amber-900">323.5</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">HGS %</td>
+                        <td id="p1_c1_f_hgs_pct" class="p-1 border-r border-gray-100">3.6</td><td id="p1_c1_c_hgs_pct" class="p-1 border-r border-gray-100">3.5</td><td id="p1_c1_d_hgs_pct" class="p-1 border-r border-gray-300 text-red-800">30.4</td>
+                        <td id="p1_c2_f_hgs_pct" class="p-1 border-r border-gray-100">9.1</td><td id="p1_c2_c_hgs_pct" class="p-1 border-r border-gray-100">4.2</td><td id="p1_c2_d_hgs_pct" class="p-1 border-r border-gray-300 text-red-800">32.6</td>
+                        <td id="p1_c3_f_hgs_pct" class="p-1 border-r border-gray-100">9.1</td><td id="p1_c3_c_hgs_pct" class="p-1 border-r border-gray-100">3.5</td><td id="p1_c3_d_hgs_pct" class="p-1 border-r border-gray-300 text-red-800">32.5</td>
+                        <td id="p1_c4_f_hgs_pct" class="p-1 border-r border-gray-100">9.1</td><td id="p1_c4_c_hgs_pct" class="p-1 border-r border-gray-100">4.2</td><td id="p1_c4_d_hgs_pct" class="p-1 text-red-800">29.9</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">HGS (ppb)</td>
+                        <td id="main_c1_f_hgs" class="p-1 border-r border-gray-100">52.9</td><td id="main_c1_c_hgs" class="p-1 border-r border-gray-100">51.3</td><td id="main_c1_d_hgs" class="p-1 border-r border-gray-300 font-medium text-red-900">446.9</td>
+                        <td id="main_c2_f_hgs" class="p-1 border-r border-gray-100">133.8</td><td id="main_c2_c_hgs" class="p-1 border-r border-gray-100">61.5</td><td id="main_c2_d_hgs" class="p-1 border-r border-gray-300 font-medium text-red-900">479.4</td>
+                        <td id="main_c3_f_hgs" class="p-1 border-r border-gray-100">133.8</td><td id="main_c3_c_hgs" class="p-1 border-r border-gray-100">51.4</td><td id="main_c3_d_hgs" class="p-1 border-r border-gray-300 font-medium text-red-900">478.0</td>
+                        <td id="main_c4_f_hgs" class="p-1 border-r border-gray-100">133.8</td><td id="main_c4_c_hgs" class="p-1 border-r border-gray-100">61.5</td><td id="main_c4_d_hgs" class="p-1 font-medium text-red-900">440.2</td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Oil on Cuttings (w/w) %</td>
+                        <td colspan="2" class="p-0 border-r border-gray-100 bg-gray-50/50"></td><td id="p1_c1_w_pct" class="p-1 border-r border-gray-300 font-bold bg-red-50/10">9.97</td>
+                        <td colspan="2" class="p-0 border-r border-gray-100 bg-gray-50/50"></td><td id="p1_c2_w_pct" class="p-1 border-r border-gray-300 font-bold bg-red-50/10">9.87</td>
+                        <td colspan="2" class="p-0 border-r border-gray-100 bg-gray-50/50"></td><td id="p1_c3_w_pct" class="p-1 border-r border-gray-300 font-bold bg-red-50/10">9.87</td>
+                        <td colspan="2" class="p-0 border-r border-gray-100 bg-gray-50/50"></td><td id="p1_c4_w_pct" class="p-1 font-bold bg-red-50/10">10.25</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="p-1.5 bg-gray-50 text-gray-500 font-mono text-[8.5px] border-x border-b border-gray-300 space-y-0.5">
+                <div>* Corrected Solids % = Retort Solid % calculated from fluid phase distribution.</div>
+                <div>* Component Concentration Formula: $\text{ppb} = \text{Component Value \%} \times 350 \times \text{Component Spec Gravity}$</div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="table-header">Volume Discharged Breakdown</div>
+            <table class="w-full text-left border-collapse border border-gray-300 text-[10px]">
+                <thead>
+                    <tr class="bg-gray-100 border-b border-gray-300 font-semibold text-center text-red-700">
+                        <th class="p-1 border-r border-gray-300 w-44 text-left pl-2">Parameter</th>
+                        <th class="p-1 border-r border-gray-300">Centrifuge #1</th>
+                        <th class="p-1 border-r border-gray-300">Centrifuge #2</th>
+                        <th class="p-1 border-r border-gray-300">Centrifuge #3</th>
+                        <th class="p-1">Centrifuge #4</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white text-center">
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Total Mud Vol. Lost (bbl.)</td>
+                        <td class="p-1 border-r border-gray-300 font-semibold" id="b1_mud">50.0</td>
+                        <td class="p-1 border-r border-gray-300 font-semibold" id="b2_mud">46.0</td>
+                        <td class="p-1 border-r border-gray-300 font-semibold" id="b3_mud">43.0</td>
+                        <td class="p-1 font-semibold" id="b4_mud">47.0</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Oil Vol. Lost (bbl.)</td>
+                        <td class="p-1 border-r border-gray-300" id="b1_oil">13.1</td>
+                        <td class="p-1 border-r border-gray-300" id="b2_oil">12.1</td>
+                        <td class="p-1 border-r border-gray-300" id="b3_oil">11.3</td>
+                        <td class="p-1" id="b4_oil">12.5</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Water Vol. Lost (bbl.)</td>
+                        <td class="p-1 border-r border-gray-300" id="b1_water">4.0</td>
+                        <td class="p-1 border-r border-gray-300" id="b2_water">3.7</td>
+                        <td class="p-1 border-r border-gray-300" id="b3_water">3.4</td>
+                        <td class="p-1" id="b4_water">3.8</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Solids Vol. Lost (bbl.)</td>
+                        <td class="p-1 border-r border-gray-300" id="b1_sol">15.5</td>
+                        <td class="p-1 border-r border-gray-300" id="b2_sol">14.3</td>
+                        <td class="p-1 border-r border-gray-300" id="b3_sol">28.3</td>
+                        <td class="p-1" id="b4_sol">14.6</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">LGS Vol. (bbl.)</td>
+                        <td class="p-1 border-r border-gray-300" id="b1_lgs">11.0</td>
+                        <td class="p-1 border-r border-gray-300" id="b2_lgs">10.1</td>
+                        <td class="p-1 border-r border-gray-300" id="b3_lgs">14.3</td>
+                        <td class="p-1" id="b4_lgs">10.3</td>
+                    </tr>
+                    <tr class="border-b border-gray-200">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">HGS Vol. (bbl.)</td>
+                        <td class="p-1 border-r border-gray-300" id="b1_hgs">4.5</td>
+                        <td class="p-1 border-r border-gray-300" id="b2_hgs">4.2</td>
+                        <td class="p-1 border-r border-gray-300" id="b3_hgs">14.0</td>
+                        <td class="p-1" id="b4_hgs">4.3</td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-1 text-left font-medium text-red-700 border-r border-gray-300 pl-2">Skips Filled</td>
+                        <td class="p-1 border-r border-gray-300" id="b1_skips_out">5</td>
+                        <td class="p-1 border-r border-gray-300" id="b2_skips_out">5</td>
+                        <td class="p-1 border-r border-gray-300" id="b3_skips_out">4.0</td>
+                        <td class="p-1" id="b4_skips_out">5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <div class="table-header">Comments</div>
+            <textarea id="comments" rows="4" class="w-full border border-gray-300 p-2 text-[11px] leading-relaxed focus:bg-yellow-50 outline-none rounded-b" placeholder="Enter report annotations...">Centrifuge was operational on Solid removal mode (processed 840 bbls).We have discarded 186 bbl.We have filled 19 Cutting Skips.We have filled 1.8 MT cutting in each skips, Total kg LGS 38309 discarded.Flushing and greasing the unit.Ambient temperature was 51.8F and Mud Sample tem was 61.6F.Housekeeping done around centrifuge area.</textarea>
+        </div>
+
+        <div class="mt-6 mb-4 no-print border border-amber-600 rounded">
+            <div class="bg-amber-700 text-white font-bold text-xs text-center uppercase p-2 flex justify-between items-center">
+                <span>Historical Logs Archive (Saved Date-Wise)</span>
+                <div class="space-x-1">
+                    <button onclick="exportHistoricalExcel()" class="bg-emerald-800 hover:bg-emerald-900 text-white px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer">Export History Log</button>
+                    <button onclick="clearHistory()" class="bg-red-800 hover:bg-red-900 text-white px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer">Clear Archive</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-60 bg-white p-1">
+                <table class="w-full text-center text-[10px] border-collapse" id="history_table">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-gray-300 text-gray-700 font-bold">
+                            <th class="p-1 border-r border-gray-200">Date</th>
+                            <th class="p-1 border-r border-gray-200">Report No.</th>
+                            <th class="p-1 border-r border-gray-200">Operator</th>
+                            <th class="p-1 border-r border-gray-200">Total Mud Lost (bbl)</th>
+                            <th class="p-1 border-r border-gray-200">C1 Discard (gpm)</th>
+                            <th class="p-1 border-r border-gray-200">C2 Discard (gpm)</th>
+                            <th class="p-1 border-r border-gray-200">C3 Discard (gpm)</th>
+                            <th class="p-1 border-r border-gray-200">C4 Discard (gpm)</th>
+                            <th class="p-1">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history_table_body" class="divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4 flex justify-end text-[9px] text-gray-500 font-mono">
+            <span>Owner: Mohit Garg, Ver 14 r3, Date 12-Mar-2025</span>
+        </div>
+    </div>
+
+    <div id="finalReportModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden no-print p-4 overflow-y-auto">
+        <div class="bg-white rounded shadow-2xl max-w-6xl w-full p-6 border border-gray-300 relative max-h-[95vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+                <h2 class="text-lg font-bold text-red-700 uppercase tracking-tight">Solids Control Daily Report - Page 2 Final Analytics</h2>
+                <div class="space-x-1 flex items-center">
+                    <button onclick="exportCSV()" class="bg-gray-700 hover:bg-gray-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Export CSV</button>
+                    <button onclick="exportExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Export Excel</button>
+                    <button onclick="window.print()" class="bg-red-700 hover:bg-red-800 text-white px-2 py-1 rounded text-xs transition font-semibold shadow-sm cursor-pointer">Print / PDF</button>
+                    <button onclick="closeFinalReportModal()" class="text-gray-500 hover:text-gray-800 text-xl font-bold cursor-pointer ml-2">&times;</button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <table class="w-full text-center border border-gray-300 text-[10px] border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 font-bold border-b border-gray-300 text-red-700">
+                            <th class="p-1 border-r border-gray-300"></th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #1</th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #2</th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #3</th>
+                            <th colspan="4" class="p-1">CENTRIFUGE #4</th>
+                        </tr>
+                        <tr class="bg-gray-50 border-b border-gray-300 font-medium">
+                            <th class="p-1 border-r border-gray-300"></th>
+                            <th class="p-px border-r border-gray-200">Feed</th><th class="p-px border-r border-gray-200">Centrate</th><th class="p-px border-r border-gray-200">Discard</th><th class="p-px border-r border-gray-300 text-red-600 bg-red-50 font-bold">Accuracy</th>
+                            <th class="p-px border-r border-gray-200">Feed</th><th class="p-px border-r border-gray-200">Centrate</th><th class="p-px border-r border-gray-200">Discard</th><th class="p-px border-r border-gray-300 text-red-600 bg-gray-50 font-bold">Accuracy</th>
+                            <th class="p-px border-r border-gray-200">Feed</th><th class="p-px border-r border-gray-200">Centrate</th><th class="p-px border-r border-gray-200">Discard</th><th class="p-px border-r border-gray-300 text-red-600 bg-red-50 font-bold">Accuracy</th>
+                            <th class="p-px border-r border-gray-200">Feed</th><th class="p-px border-r border-gray-200">Centrate</th><th class="p-px border-r border-gray-200">Discard</th><th class="p-px text-red-600 bg-gray-50 font-bold">Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 font-medium pl-1 text-red-700">Mode of Operation</td>
+                            <td colspan="4" id="m2_c1_mode" class="p-1 border-r border-gray-300 text-center font-semibold italic text-blue-800"></td>
+                            <td colspan="4" id="m2_c2_mode" class="p-1 border-r border-gray-300 text-center font-semibold italic text-blue-800"></td>
+                            <td colspan="4" id="m2_c3_mode" class="p-1 border-r border-gray-300 text-center font-semibold italic text-blue-800"></td>
+                            <td colspan="4" id="m2_c4_mode" class="p-1 text-center font-semibold italic text-blue-800"></td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 font-medium pl-1 text-red-700">Density (pcf)</td>
+                            <td id="m2_c1_f_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c1_c_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c1_d_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c1_acc_pcf" rowspan="5" class="p-1 border-r border-gray-300 bg-gray-50 text-center font-bold text-red-700">99%</td>
+                            <td id="m2_c2_f_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c2_c_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c2_d_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c2_acc_pcf" rowspan="5" class="p-1 border-r border-gray-300 bg-gray-50 text-center font-bold text-red-700">100%</td>
+                            <td id="m2_c3_f_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c3_c_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c3_d_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c3_acc_pcf" rowspan="5" class="p-1 border-r border-gray-300 bg-gray-50 text-center font-bold text-red-700">99%</td>
+                            <td id="m2_c4_f_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c4_c_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c4_d_pcf" class="p-1 border-r border-gray-200"></td><td id="m2_c4_acc_pcf" rowspan="5" class="p-1 bg-gray-50 text-center font-bold text-red-700">100%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 font-medium pl-1 text-red-700">Fluid Vol. (bbl.)</td>
+                            <td id="m2_c1_f_vol" class="p-1 border-r border-gray-200 font-semibold"></td><td id="m2_c1_c_vol" class="p-1 border-r border-gray-200"></td><td id="m2_c1_d_vol" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c2_f_vol" class="p-1 border-r border-gray-200 font-semibold"></td><td id="m2_c2_c_vol" class="p-1 border-r border-gray-200"></td><td id="m2_c2_d_vol" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c3_f_vol" class="p-1 border-r border-gray-200 font-semibold"></td><td id="m2_c3_c_vol" class="p-1 border-r border-gray-200"></td><td id="m2_c3_d_vol" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c4_f_vol" class="p-1 border-r border-gray-200 font-semibold"></td><td id="m2_c4_c_vol" class="p-1 border-r border-gray-200"></td><td id="m2_c4_d_vol" class="p-1 border-r border-gray-200"></td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 font-medium pl-1 text-red-700">Total Solids (bbl.)</td>
+                            <td id="m2_c1_f_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c1_c_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c1_d_ts" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c2_f_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c2_c_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c2_d_ts" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c3_f_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c3_c_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c3_d_ts" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c4_f_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c4_c_ts" class="p-1 border-r border-gray-200"></td><td id="m2_c4_d_ts" class="p-1 border-r border-gray-200"></td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 font-medium pl-1 text-red-700">LGS (bbl.)</td>
+                            <td id="m2_c1_f_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c1_c_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c1_d_lgs" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c2_f_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c2_c_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c2_d_lgs" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c3_f_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c3_c_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c3_d_lgs" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c4_f_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c4_c_lgs" class="p-1 border-r border-gray-200"></td><td id="m2_c4_d_lgs" class="p-1 border-r border-gray-200"></td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 font-medium pl-1 text-red-700">HGS (bbl.)</td>
+                            <td id="m2_c1_f_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c1_c_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c1_d_hgs" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c2_f_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c2_c_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c2_d_hgs" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c3_f_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c3_c_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c3_d_hgs" class="p-1 border-r border-gray-200"></td>
+                            <td id="m2_c4_f_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c4_c_hgs" class="p-1 border-r border-gray-200"></td><td id="m2_c4_d_hgs" class="p-1 border-r border-gray-200"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-6">
+                <div class="font-bold text-[11px] text-red-700 mb-1 uppercase tracking-tight">Data by Volume</div>
+                <table class="w-full text-center border border-gray-300 text-[10px] border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 font-semibold border-b border-gray-300">
+                            <th class="p-1 border-r border-gray-300 w-44"></th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #1</th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #2</th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #3</th>
+                            <th colspan="4" class="p-1">CENTRIFUGE #4</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">Oil (gpm)</td>
+                            <td id="v_c1_f_oil" class="p-1"></td><td id="v_c1_c_oil" class="p-1"></td><td id="v_c1_d_oil" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">105%</td>
+                            <td id="v_c2_f_oil" class="p-1"></td><td id="v_c2_c_oil" class="p-1"></td><td id="v_c2_d_oil" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">104%</td>
+                            <td id="v_c3_f_oil" class="p-1"></td><td id="v_c3_c_oil" class="p-1"></td><td id="v_c3_d_oil" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">105%</td>
+                            <td id="v_c4_f_oil" class="p-1"></td><td id="v_c4_c_oil" class="p-1"></td><td id="v_c4_d_oil" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">104%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">Water (gpm)</td>
+                            <td id="v_c1_f_wtr" class="p-1"></td><td id="v_c1_c_wtr" class="p-1"></td><td id="v_c1_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
+                            <td id="v_c2_f_wtr" class="p-1"></td><td id="v_c2_c_wtr" class="p-1"></td><td id="v_c2_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">91%</td>
+                            <td id="v_c3_f_wtr" class="p-1"></td><td id="v_c3_c_wtr" class="p-1"></td><td id="v_c3_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
+                            <td id="v_c4_f_wtr" class="p-1"></td><td id="w_c4_c_wtr" class="p-1"></td><td id="v_c4_d_wtr" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">90%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">LGS (gpm)</td>
+                            <td id="v_c1_f_lgs" class="p-1"></td><td id="v_c1_c_lgs" class="p-1"></td><td id="v_c1_d_lgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">95%</td>
+                            <td id="v_c2_f_lgs" class="p-1"></td><td id="v_c2_c_lgs" class="p-1"></td><td id="v_c2_d_lgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">89%</td>
+                            <td id="v_c3_f_lgs" class="p-1"></td><td id="v_c3_c_lgs" class="p-1"></td><td id="v_c3_d_lgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">92%</td>
+                            <td id="v_c4_f_lgs" class="p-1"></td><td id="v_c4_c_lgs" class="p-1"></td><td id="v_c4_d_lgs" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">93%</td>
+                        </tr>
+                        <tr class="border-b border-gray-300">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">HGS (gpm)</td>
+                            <td id="v_c1_f_hgs" class="p-1"></td><td id="v_c1_c_hgs" class="p-1"></td><td id="v_c1_d_hgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">107%</td>
+                            <td id="v_c2_f_hgs" class="p-1"></td><td id="v_c2_c_hgs" class="p-1"></td><td id="v_c2_d_hgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">114%</td>
+                            <td id="v_c3_f_hgs" class="p-1"></td><td id="v_c3_c_hgs" class="p-1"></td><td id="v_c3_d_hgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">111%</td>
+                            <td id="v_c4_f_hgs" class="p-1"></td><td id="v_c4_c_hgs" class="p-1"></td><td id="v_c4_d_hgs" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">110%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-6">
+                <div class="font-bold text-[11px] text-red-700 mb-1 uppercase tracking-tight">Data by Weight</div>
+                <table class="w-full text-center border border-gray-300 text-[10px] border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 font-semibold border-b border-gray-300">
+                            <th class="p-1 border-r border-gray-300 w-44"></th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #1</th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #2</th>
+                            <th colspan="4" class="p-1 border-r border-gray-300">CENTRIFUGE #3</th>
+                            <th colspan="4" class="p-1">CENTRIFUGE #4</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">Oil (kg/min)</td>
+                            <td id="w_c1_f_oil" class="p-1"></td><td id="w_c1_c_oil" class="p-1"></td><td id="w_c1_d_oil" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">105%</td>
+                            <td id="w_c2_f_oil" class="p-1"></td><td id="w_c2_c_oil" class="p-1"></td><td id="w_c2_d_oil" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">104%</td>
+                            <td id="w_c3_f_oil" class="p-1"></td><td id="w_c3_c_oil" class="p-1"></td><td id="w_c3_d_oil" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">105%</td>
+                            <td id="w_c4_f_oil" class="p-1"></td><td id="w_c4_c_oil" class="p-1"></td><td id="w_c4_d_oil" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">104%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">Water (kg/min)</td>
+                            <td id="w_c1_f_wtr" class="p-1"></td><td id="w_c1_c_wtr" class="p-1"></td><td id="w_c1_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
+                            <td id="w_c2_f_wtr" class="p-1"></td><td id="w_c2_c_wtr" class="p-1"></td><td id="w_c2_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">91%</td>
+                            <td id="w_c3_f_wtr" class="p-1"></td><td id="w_c3_c_wtr" class="p-1"></td><td id="w_c3_d_wtr" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">85%</td>
+                            <td id="w_c4_f_wtr" class="p-1"></td><td id="w_c4_c_wtr" class="p-1"></td><td id="w_c4_d_wtr" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">90%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">LGS (kg/min)</td>
+                            <td id="w_c1_f_lgs" class="p-1"></td><td id="w_c1_c_lgs" class="p-1"></td><td id="w_c1_d_lgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">95%</td>
+                            <td id="w_c2_f_lgs" class="p-1"></td><td id="w_c2_c_lgs" class="p-1"></td><td id="w_c2_d_lgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">89%</td>
+                            <td id="w_c3_f_lgs" class="p-1"></td><td id="w_c3_c_lgs" class="p-1"></td><td id="w_c3_d_lgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">92%</td>
+                            <td id="w_c4_f_lgs" class="p-1"></td><td id="w_c4_c_lgs" class="p-1"></td><td id="w_c4_d_lgs" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">93%</td>
+                        </tr>
+                        <tr class="border-b border-gray-300">
+                            <td class="p-1 text-left border-r border-gray-300 pl-1 text-red-700 font-medium">HGS (kg/min)</td>
+                            <td id="w_c1_f_hgs" class="p-1"></td><td id="w_c1_c_hgs" class="p-1"></td><td id="w_c1_d_hgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">107%</td>
+                            <td id="w_c2_f_hgs" class="p-1"></td><td id="w_c2_c_hgs" class="p-1"></td><td id="w_c2_d_hgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">114%</td>
+                            <td id="w_c3_f_hgs" class="p-1"></td><td id="w_c3_c_hgs" class="p-1"></td><td id="w_c3_d_hgs" class="p-1"></td><td class="p-1 border-l border-r border-gray-300 bg-gray-50 font-bold">111%</td>
+                            <td id="w_c4_f_hgs" class="p-1"></td><td id="w_c4_c_hgs" class="p-1"></td><td id="w_c4_d_hgs" class="p-1"></td><td class="p-1 border-l bg-gray-50 font-bold">110%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-2 border border-red-700 bg-red-700 text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                Only applicable if Centrifuge 1 & 3 operating in Barite Recovery mode, and Centrifuge 2 and 4 in Solids Discard
+            </div>
+            <div class="grid grid-cols-2 gap-4 border border-gray-300 p-3 rounded mb-4 text-xs bg-gray-50">
+                <div>
+                    <div class="font-semibold text-gray-600 mb-2 italic">Operating efficiency for dual centrifuge system</div>
+                    <div class="flex justify-between items-center mb-1"><span>HGS Recovered %</span><span class="bg-white border px-3 py-0.5 font-bold rounded" id="eff_dual_hgs">23.7%</span></div>
+                    <div class="flex justify-between items-center"><span>LGS Discarded %</span><span class="bg-white border px-3 py-0.5 font-bold rounded" id="eff_dual_lgs">34.8%</span></div>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-600 mb-2 italic">Operating efficiency based on individual centrifuge system</div>
+                    <div class="flex justify-between items-center mb-1"><span>HGS Recovered %</span><span class="bg-white border px-3 py-0.5 font-bold rounded" id="eff_ind_hgs">79.7%</span></div>
+                    <div class="flex justify-between items-center"><span>LGS Discarded %</span><span class="bg-white border px-3 py-0.5 font-bold rounded" id="eff_ind_lgs">34.8%</span></div>
+                </div>
+            </div>
+
+            <div class="p-1 bg-red-900 text-white text-center font-bold text-[10px] uppercase tracking-wider mb-2">
+                If all centrifuges are operating in solids removal
+            </div>
+            <div class="grid grid-cols-2 gap-4 border border-gray-300 p-3 bg-gray-50 text-xs">
+                <div class="flex justify-between items-center"><span>HGS Discarded %</span><span class="bg-white border px-4 py-0.5 font-bold rounded" id="sol_rem_hgs">78.0%</span></div>
+                <div class="flex justify-between items-center"><span>LGS Discarded %</span><span class="bg-white border px-4 py-0.5 font-bold rounded" id="sol_rem_lgs">35.6%</span></div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeFinalReportModal()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded text-xs font-semibold cursor-pointer">Close Window</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateReport() {
+            for (let i = 1; i <= 4; i++) {
+                const hours = parseFloat(document.getElementById(`c${i}_hours`).value) || 0;
+                const f_gpm = parseFloat(document.getElementById(`c${i}_f_gpm`).value) || 0;
+                const c_gpm = parseFloat(document.getElementById(`c${i}_c_gpm`).value) || 0;
+                
+                const d_gpm = Math.max(0, f_gpm - c_gpm);
+                document.getElementById(`c${i}_gpm`).innerText = d_gpm.toFixed(1);
+
+                const f_vol = (f_gpm * 60 * hours) / 42;
+                const c_vol = (c_gpm * 60 * hours) / 42;
+                const d_vol = (d_gpm * 60 * hours) / 42;
+
+                document.getElementById(`c${i}_f_vol`).innerText = Math.round(f_vol);
+                document.getElementById(`c${i}_c_vol`).innerText = Math.round(c_vol);
+                document.getElementById(`c${i}_d_vol`).innerText = Math.round(d_vol);
+
+                ['f', 'c', 'd'].forEach(phase => {
+                    const oil = parseFloat(document.getElementById(`c${i}_${phase}_oil`).value) || 0;
+                    const water = parseFloat(document.getElementById(`c${i}_${phase}_water`).value) || 0;
+                    const solids = Math.max(0, 100 - oil - water);
+                    document.getElementById(`c${i}_${phase}_sol`).innerText = solids.toFixed(1);
+                });
+
+                document.getElementById(`b${i}_mud`).innerText = d_vol.toFixed(1);
+                
+                const d_oil_pct = parseFloat(document.getElementById(`c${i}_d_oil`).value) || 0;
+                const d_wtr_pct = parseFloat(document.getElementById(`c${i}_d_water`).value) || 0;
+                const d_sol_pct = parseFloat(document.getElementById(`c${i}_d_sol`).innerText) || 0;
+
+                document.getElementById(`b${i}_oil`).innerText = (d_vol * (d_oil_pct / 100)).toFixed(1);
+                document.getElementById(`b${i}_water`).innerText = (d_vol * (d_wtr_pct / 100)).toFixed(1);
+                document.getElementById(`b${i}_sol`).innerText = (d_vol * (d_sol_pct / 100)).toFixed(1);
+                
+                document.getElementById(`b${i}_lgs`).innerText = (d_vol * (d_sol_pct / 100) * 0.71).toFixed(1);
+                document.getElementById(`b${i}_hgs`).innerText = (d_vol * (d_sol_pct / 100) * 0.29).toFixed(1);
+
+                const skips = document.getElementById(`c${i}_skips`).value;
+                document.getElementById(`b${i}_skips_out`).innerText = skips;
+            }
+
+            syncPage2ModalData();
+        }
+
+        function syncPage2ModalData() {
+            const sgOil = parseFloat(document.getElementById('oil_density').value) || 0.84;
+            const sgWater = 1.0;
+            const sgLGS = parseFloat(document.getElementById('lgs_density').value) || 2.6;
+            const sgHGS = parseFloat(document.getElementById('hgs_density').value) || 4.2;
+            const galToKgCoeff = 3.78541;
+
+            const factors = {
+                1: { f_lgs: 0.90, c_lgs: 0.823, d_lgs: 0.539, f_hgs: 0.10, c_hgs: 0.177, d_hgs: 0.461 },
+                2: { f_lgs: 0.706, c_lgs: 0.79, d_lgs: 0.504, f_hgs: 0.294, c_hgs: 0.21, d_hgs: 0.496 },
+                3: { f_lgs: 0.706, c_lgs: 0.823, d_lgs: 0.506, f_hgs: 0.294, c_hgs: 0.177, d_hgs: 0.494 },
+                4: { f_lgs: 0.706, c_lgs: 0.79, d_lgs: 0.543, f_hgs: 0.294, c_hgs: 0.21, d_hgs: 0.457 }
+            };
+
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`m2_c${i}_mode`).innerText = document.getElementById(`c${i}_mode`).value;
+                
+                const f_pcf = parseFloat(document.getElementById(`c${i}_f_pcf`).value) || 0;
+                const c_pcf = parseFloat(document.getElementById(`c${i}_c_pcf`).value) || 0;
+                const d_pcf = parseFloat(document.getElementById(`c${i}_d_pcf`).value) || 0;
+                
+                document.getElementById(`m2_c${i}_f_pcf`).innerText = f_pcf.toFixed(1);
+                document.getElementById(`m2_c${i}_c_pcf`).innerText = c_pcf.toFixed(1);
+                document.getElementById(`m2_c${i}_d_pcf`).innerText = d_pcf.toFixed(1);
+
+                const f_vol = parseFloat(document.getElementById(`c${i}_f_vol`).innerText) || 0;
+                const c_vol = parseFloat(document.getElementById(`c${i}_c_vol`).innerText) || 0;
+                const d_vol = parseFloat(document.getElementById(`c${i}_d_vol`).innerText) || 0;
+                
+                document.getElementById(`m2_c${i}_f_vol`).innerText = Math.round(f_vol);
+                document.getElementById(`m2_c${i}_c_vol`).innerText = Math.round(c_vol);
+                document.getElementById(`m2_c${i}_d_vol`).innerText = Math.round(d_vol);
+
+                const f_sol_pct = parseFloat(document.getElementById(`c${i}_f_sol`).innerText) || 0;
+                const c_sol_pct = parseFloat(document.getElementById(`c${i}_c_sol`).innerText) || 0;
+                const d_sol_pct = parseFloat(document.getElementById(`c${i}_d_sol`).innerText) || 0;
+
+                document.getElementById(`p1_c${i}_f_ts`).innerText = f_sol_pct.toFixed(1);
+                document.getElementById(`p1_c${i}_c_ts`).innerText = c_sol_pct.toFixed(1);
+                document.getElementById(`p1_c${i}_d_ts`).innerText = d_sol_pct.toFixed(1);
+
+                const f_ts = (f_vol * (f_sol_pct / 100)).toFixed(1);
+                const c_ts = (c_vol * (c_sol_pct / 100)).toFixed(1);
+                const d_ts = (d_vol * (d_sol_pct / 100)).toFixed(1);
+
+                document.getElementById(`m2_c${i}_f_ts`).innerText = f_ts;
+                document.getElementById(`m2_c${i}_c_ts`).innerText = c_ts;
+                document.getElementById(`m2_c${i}_d_ts`).innerText = d_ts;
+
+                const val_f_lgs = (factors[i].f_lgs * 100).toFixed(1);
+                const val_c_lgs = (factors[i].c_lgs * 100).toFixed(1);
+                const val_d_lgs = (factors[i].d_lgs * 100).toFixed(1);
+
+                document.getElementById(`p1_c${i}_f_lgs_pct`).innerText = val_f_lgs;
+                document.getElementById(`p1_c${i}_c_lgs_pct`).innerText = val_c_lgs;
+                document.getElementById(`p1_c${i}_d_lgs_pct`).innerText = val_d_lgs;
+
+                const val_f_hgs = (factors[i].f_hgs * 100).toFixed(1);
+                const val_c_hgs = (factors[i].c_hgs * 100).toFixed(1);
+                const val_d_hgs = (factors[i].d_hgs * 100).toFixed(1);
+
+                document.getElementById(`p1_c${i}_f_hgs_pct`).innerText = val_f_hgs;
+                document.getElementById(`p1_c${i}_c_hgs_pct`).innerText = val_c_hgs;
+                document.getElementById(`p1_c${i}_d_hgs_pct`).innerText = val_d_hgs;
+
+                document.getElementById(`m2_c${i}_f_lgs`).innerText = (f_ts * factors[i].f_lgs).toFixed(1);
+                document.getElementById(`m2_c${i}_c_lgs`).innerText = (c_ts * factors[i].c_lgs).toFixed(1);
+                document.getElementById(`m2_c${i}_d_lgs`).innerText = (d_ts * factors[i].d_lgs).toFixed(1);
+
+                document.getElementById(`m2_c${i}_f_hgs`).innerText = (f_ts * factors[i].f_hgs).toFixed(1);
+                document.getElementById(`m2_c${i}_c_hgs`).innerText = (c_ts * factors[i].c_hgs).toFixed(1);
+                document.getElementById(`m2_c${i}_d_hgs`).innerText = (d_ts * factors[i].d_hgs).toFixed(1);
+
+                const f_gpm = parseFloat(document.getElementById(`c${i}_f_gpm`).value) || 0;
+                const c_gpm = parseFloat(document.getElementById(`c${i}_c_gpm`).value) || 0;
+                const d_gpm = parseFloat(document.getElementById(`c${i}_gpm`).innerText) || 0;
+
+                const f_oil_pct = parseFloat(document.getElementById(`c${i}_f_oil`).value) || 0;
+                const c_oil_pct = parseFloat(document.getElementById(`c${i}_c_oil`).value) || 0;
+                const d_oil_pct = parseFloat(document.getElementById(`c${i}_d_oil`).value) || 0;
+
+                const v_f_oil = f_gpm * (f_oil_pct / 100);
+                const v_c_oil = c_gpm * (c_oil_pct / 100);
+                const v_d_oil = d_gpm * (d_oil_pct / 100);
+
+                document.getElementById(`v_c${i}_f_oil`).innerText = v_f_oil.toFixed(1);
+                document.getElementById(`v_c${i}_c_oil`).innerText = v_c_oil.toFixed(1);
+                document.getElementById(`v_c${i}_d_oil`).innerText = v_d_oil.toFixed(1);
+
+                const f_wtr_pct = parseFloat(document.getElementById(`c${i}_f_water`).value) || 0;
+                const c_wtr_pct = parseFloat(document.getElementById(`c${i}_c_water`).value) || 0;
+                const d_wtr_pct = parseFloat(document.getElementById(`c${i}_d_water`).value) || 0;
+
+                const v_f_wtr = f_gpm * (f_wtr_pct / 100);
+                const v_c_wtr = c_gpm * (c_wtr_pct / 100);
+                const v_d_wtr = d_gpm * (d_wtr_pct / 100);
+
+                document.getElementById(`v_c${i}_f_wtr`).innerText = v_f_wtr.toFixed(1);
+                document.getElementById(`v_c${i}_c_wtr`).innerText = v_c_wtr.toFixed(1);
+                document.getElementById(`v_c${i}_d_wtr`).innerText = v_d_wtr.toFixed(1);
+
+                document.getElementById(`v_c${i}_f_lgs`).innerText = (f_gpm * (f_sol_pct / 100) * factors[i].f_lgs).toFixed(1);
+                document.getElementById(`v_c${i}_c_lgs`).innerText = (c_gpm * (c_sol_pct / 100) * factors[i].c_lgs).toFixed(1);
+                document.getElementById(`v_c${i}_d_lgs`).innerText = (d_gpm * (d_sol_pct / 100) * factors[i].d_lgs).toFixed(1);
+
+                document.getElementById(`v_c${i}_f_hgs`).innerText = (f_gpm * (f_sol_pct / 100) * factors[i].f_hgs).toFixed(1);
+                document.getElementById(`v_c${i}_c_hgs`).innerText = (c_gpm * (c_sol_pct / 100) * factors[i].c_hgs).toFixed(1);
+                document.getElementById(`v_c${i}_d_hgs`).innerText = (d_gpm * (d_sol_pct / 100) * factors[i].d_hgs).toFixed(1);
+
+                document.getElementById(`w_c${i}_f_oil`).innerText = (v_f_oil * sgOil * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_c_oil`).innerText = (v_c_oil * sgOil * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_d_oil`).innerText = (v_d_oil * sgOil * galToKgCoeff).toFixed(1);
+
+                document.getElementById(`w_c${i}_f_wtr`).innerText = (v_f_wtr * sgWater * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_c_wtr`).innerText = (v_c_wtr * sgWater * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_d_wtr`).innerText = (v_d_wtr * sgWater * galToKgCoeff).toFixed(1);
+
+                document.getElementById(`w_c${i}_f_lgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_f_lgs`).innerText) * sgLGS * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_c_lgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_c_lgs`).innerText) * sgLGS * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_d_lgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_d_lgs`).innerText) * sgLGS * galToKgCoeff).toFixed(1);
+
+                document.getElementById(`w_c${i}_f_hgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_f_hgs`).innerText) * sgHGS * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_c_hgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_c_hgs`).innerText) * sgHGS * galToKgCoeff).toFixed(1);
+                document.getElementById(`w_c${i}_d_hgs`).innerText = (parseFloat(document.getElementById(`v_c${i}_d_hgs`).innerText) * sgHGS * galToKgCoeff).toFixed(1);
+            }
+        }
+
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('solids_control_history')) || [];
+        }
+
+        function renderHistoryTable() {
+            const history = getHistory();
+            const tbody = document.getElementById('history_table_body');
+            tbody.innerHTML = '';
+            
+            if(history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-gray-400 italic">No historical records saved. Fill out metrics and click 'Save to History'.</td></tr>`;
+                return;
+            }
+
+            history.forEach((record, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-amber-50/50 transition border-b border-gray-200 text-gray-800";
+                tr.innerHTML = `
+                    <td class="p-1.5 border-r border-gray-200 font-semibold">${record.date}</td>
+                    <td class="p-1.5 border-r border-gray-200">${record.reportNum}</td>
+                    <td class="p-1.5 border-r border-gray-200">${record.operator}</td>
+                    <td class="p-1.5 border-r border-gray-200 font-medium text-red-700">${record.totalMudLost}</td>
+                    <td class="p-1.5 border-r border-gray-200">${record.c1_d_gpm}</td>
+                    <td class="p-1.5 border-r border-gray-200">${record.c2_d_gpm}</td>
+                    <td class="p-1.5 border-r border-gray-200">${record.c3_d_gpm}</td>
+                    <td class="p-1.5 border-r border-gray-200">${record.c4_d_gpm}</td>
+                    <td class="p-1.5 space-x-1">
+                        <button onclick="loadHistoryRecord(${index})" class="text-blue-700 hover:underline font-medium cursor-pointer">Load</button>
+                        <button onclick="deleteHistoryRecord(${index})" class="text-red-600 hover:underline font-medium cursor-pointer ml-1">Del</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveCurrentToHistory() {
+            calculateReport();
+            const history = getHistory();
+            
+            const totalLost = (
+                parseFloat(document.getElementById('b1_mud').innerText) +
+                parseFloat(document.getElementById('b2_mud').innerText) +
+                parseFloat(document.getElementById('b3_mud').innerText) +
+                parseFloat(document.getElementById('b4_mud').innerText)
+            ).toFixed(1);
+
+            const record = {
+                date: document.getElementById('date').value,
+                reportNum: document.getElementById('report_num').value,
+                operator: document.getElementById('operator').value,
+                totalMudLost: totalLost,
+                oilDensity: document.getElementById('oil_density').value,
+                hgsDensity: document.getElementById('hgs_density').value,
+                lgsDensity: document.getElementById('lgs_density').value,
+                brineCorr: document.getElementById('brine_corr').value,
+                brineDensity: document.getElementById('brine_density').value,
+                oilFractionOwr: document.getElementById('oil_fraction_owr').value,
+                
+                c1_hours: document.getElementById('c1_hours').value,
+                c2_hours: document.getElementById('c2_hours').value,
+                c3_hours: document.getElementById('c3_hours').value,
+                c4_hours: document.getElementById('c4_hours').value,
+                
+                c1_f_gpm: document.getElementById('c1_f_gpm').value, c1_c_gpm: document.getElementById('c1_c_gpm').value,
+                c2_f_gpm: document.getElementById('c2_f_gpm').value, c2_c_gpm: document.getElementById('c2_c_gpm').value,
+                c3_f_gpm: document.getElementById('c3_f_gpm').value, c3_c_gpm: document.getElementById('c3_c_gpm').value,
+                c4_f_gpm: document.getElementById('c4_f_gpm').value, c4_c_gpm: document.getElementById('c4_c_gpm').value,
+
+                c1_f_pcf: document.getElementById('c1_f_pcf').value, c1_c_pcf: document.getElementById('c1_c_pcf').value, c1_d_pcf: document.getElementById('c1_d_pcf').value,
+                c2_f_pcf: document.getElementById('c2_f_pcf').value, c2_c_pcf: document.getElementById('c2_c_pcf').value, c2_d_pcf: document.getElementById('c2_d_pcf').value,
+                c3_f_pcf: document.getElementById('c3_f_pcf').value, c3_c_pcf: document.getElementById('c3_c_pcf').value, c3_d_pcf: document.getElementById('c3_d_pcf').value,
+                c4_f_pcf: document.getElementById('c4_f_pcf').value, c4_c_pcf: document.getElementById('c4_c_pcf').value, c4_d_pcf: document.getElementById('c4_d_pcf').value,
+
+                c1_f_oil: document.getElementById('c1_f_oil').value, c1_c_oil: document.getElementById('c1_c_oil').value, c1_d_oil: document.getElementById('c1_d_oil').value,
+                c2_f_oil: document.getElementById('c2_f_oil').value, c2_c_oil: document.getElementById('c2_c_oil').value, c2_d_oil: document.getElementById('c2_d_oil').value,
+                c3_f_oil: document.getElementById('c3_f_oil').value, c3_c_oil: document.getElementById('c3_c_oil').value, c3_d_oil: document.getElementById('c3_d_oil').value,
+                c4_f_oil: document.getElementById('c4_f_oil').value, c4_c_oil: document.getElementById('c4_c_oil').value, c4_d_oil: document.getElementById('c4_d_oil').value,
+
+                c1_f_water: document.getElementById('c1_f_water').value, c1_c_water: document.getElementById('c1_c_water').value, c1_d_water: document.getElementById('c1_d_water').value,
+                c2_f_water: document.getElementById('c2_f_water').value, c2_c_water: document.getElementById('c2_c_water').value, c2_d_water: document.getElementById('c2_d_water').value,
+                c3_f_water: document.getElementById('c3_f_water').value, c3_c_water: document.getElementById('c3_c_water').value, c3_d_water: document.getElementById('c3_d_water').value,
+                c4_f_water: document.getElementById('c4_f_water').value, c4_c_water: document.getElementById('c4_c_water').value, c4_d_water: document.getElementById('c4_d_water').value,
+
+                c1_d_gpm: document.getElementById('c1_gpm').innerText,
+                c2_d_gpm: document.getElementById('c2_gpm').innerText,
+                c3_d_gpm: document.getElementById('c3_gpm').innerText,
+                c4_d_gpm: document.getElementById('c4_gpm').innerText,
+                comments: document.getElementById('comments').value
+            };
+
+            const cleanHistory = history.filter(item => !(item.date === record.date && item.reportNum === record.reportNum));
+            cleanHistory.unshift(record);
+            localStorage.setItem('solids_control_history', JSON.stringify(cleanHistory));
+            renderHistoryTable();
+            alert(`Report logged successfully under date: ${record.date}`);
+        }
+
+        function loadHistoryRecord(index) {
+            const history = getHistory();
+            const record = history[index];
+            if (!record) return;
+
+            document.getElementById('date').value = record.date;
+            document.getElementById('report_num').value = record.reportNum;
+            document.getElementById('operator').value = record.operator;
+            document.getElementById('oil_density').value = record.oilDensity;
+            document.getElementById('hgs_density').value = record.hgsDensity;
+            document.getElementById('lgs_density').value = record.lgsDensity;
+            document.getElementById('brine_corr').value = record.brineCorr;
+            document.getElementById('brine_density').value = record.brineDensity;
+            document.getElementById('oil_fraction_owr').value = record.oilFractionOwr;
+
+            for(let i=1; i<=4; i++) {
+                if(record[`c${i}_hours`]) document.getElementById(`c${i}_hours`).value = record[`c${i}_hours`];
+                if(record[`c${i}_f_gpm`]) document.getElementById(`c${i}_f_gpm`).value = record[`c${i}_f_gpm`];
+                if(record[`c${i}_c_gpm`]) document.getElementById(`c${i}_c_gpm`).value = record[`c${i}_c_gpm`];
+                
+                ['f', 'c', 'd'].forEach(p => {
+                    if(record[`c${i}_${p}_pcf`]) document.getElementById(`c${i}_${p}_pcf`).value = record[`c${i}_${p}_pcf`];
+                    if(record[`c${i}_${p}_oil`]) document.getElementById(`c${i}_${p}_oil`).value = record[`c${i}_${p}_oil`];
+                    if(record[`c${i}_${p}_water`]) document.getElementById(`c${i}_${p}_water`).value = record[`c${i}_${p}_water`];
+                });
+            }
+            if(record.comments) document.getElementById('comments').value = record.comments;
+            
+            calculateReport();
+            alert(`Record loaded for inspection parameters: ${record.date}`);
+        }
+
+        function deleteHistoryRecord(index) {
+            if(!confirm("Delete this historical metric snapshot row?")) return;
+            const history = getHistory();
+            history.splice(index, 1);
+            localStorage.setItem('solids_control_history', JSON.stringify(history));
+            renderHistoryTable();
+        }
+
+        function clearHistory() {
+            if(!confirm("Permanently erase your logged matrix parameters sheet cache data archive?")) return;
+            localStorage.removeItem('solids_control_history');
+            renderHistoryTable();
+        }
+
+        function exportHistoricalExcel() {
+            const history = getHistory();
+            if(history.length === 0) {
+                alert("Archive contains no data matrix profiles to compute dynamic workbook profiles.");
+                return;
+            }
+
+            const matrixHeaders = [
+                ["SOLID CONTROL SYSTEM MASTER HISTORICAL TIME-SERIES LEDGER"],
+                [],
+                ["Date Logged", "Report Index", "Verified Engineer", "Aggregated Mud Loss (bbl)", "C1 Loss Rate (gpm)", "C2 Loss Rate (gpm)", "C3 Loss Rate (gpm)", "C4 Loss Rate (gpm)", "C1 Hours Running", "C2 Hours Running", "C3 Hours Running", "C4 Hours Running"]
+            ];
+
+            history.forEach(item => {
+                matrixHeaders.push([
+                    item.date, item.reportNum, item.operator, item.totalMudLost,
+                    item.c1_d_gpm, item.c2_d_gpm, item.c3_d_gpm, item.c4_d_gpm,
+                    item.c1_hours, item.c2_hours, item.c3_hours, item.c4_hours
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(matrixHeaders);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Master History Matrix");
+            XLSX.writeFile(wb, `Master_Solids_Control_Timeline_Logs.xlsx`);
+        }
+
+        function gatherDataset() {
+            return [
+                ["HALLIBURTON - SOLIDS CONTROL DAILY REPORT (COMPLETE SYSTEM DATA)"],
+                [],
+                ["SECTION 1: GENERAL DATA"],
+                ["Date", document.getElementById('date').value, "Report Number", document.getElementById('report_num').value],
+                ["Centrifuge Operator", document.getElementById('operator').value],
+                ["Oil Density (SG)", document.getElementById('oil_density').value, "Brine Corr. Factor", document.getElementById('brine_corr').value],
+                ["HGS Density (SG)", document.getElementById('hgs_density').value, "LGS Density (SG)", document.getElementById('lgs_density').value],
+                ["Brine Density", document.getElementById('brine_density').value, "Oil Fraction of OWR", document.getElementById('oil_fraction_owr').value],
+                ["Water Density (SG)", document.getElementById('water_density_static').value, "Liquid Phase Density", document.getElementById('liquid_density_static').value],
+                [],
+                ["SECTION 2: SHALE SHAKERS DATA"],
+                ["Equipment", "Model", "Equipment Number", "Op. Hours", "Mesh Size", "Vol Processed (bbl)", "Vol Recovered (bbl)", "Vol Discard (bbl)"],
+                ["Shaker 1", document.getElementById('s1_model').value, document.getElementById('s1_eq').value, document.getElementById('s1_hours').value, document.getElementById('s1_mesh').value, document.getElementById('s1_vol_p').value, document.getElementById('s1_vol_r').value, document.getElementById('s1_vol_d').value],
+                ["Shaker 2", document.getElementById('s2_model').value, document.getElementById('s2_eq').value, document.getElementById('s2_hours').value, document.getElementById('s2_mesh').value, document.getElementById('s2_vol_p').value, document.getElementById('s2_vol_r').value, document.getElementById('s2_vol_d').value],
+                ["Shaker 3", document.getElementById('s3_model').value, document.getElementById('s3_eq').value, document.getElementById('s3_hours').value, document.getElementById('s3_mesh').value, document.getElementById('s3_vol_p').value, document.getElementById('s3_vol_r').value, document.getElementById('s3_vol_d').value],
+                ["Shaker 4", document.getElementById('s4_model').value, document.getElementById('s4_eq').value, document.getElementById('s4_hours').value, document.getElementById('s4_mesh').value, document.getElementById('s4_vol_p').value, document.getElementById('s4_vol_r').value, document.getElementById('s4_vol_d').value],
+                [],
+                ["SECTION 3: CENTRIFUGES OPERATIONAL DATA (PAGE 1)"],
+                ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
+                ["Model", document.getElementById('c1_model').value, "", "", document.getElementById('c2_model').value, "", "", document.getElementById('c3_model').value, "", "", document.getElementById('c4_model').value, "", ""],
+                ["Equipment Number", document.getElementById('c1_eq').value, "", "", document.getElementById('c2_eq').value, "", "", document.getElementById('c3_eq').value, "", "", document.getElementById('c4_eq').value, "", ""],
+                ["Fluid Type", document.getElementById('c1_fluid').value, "", "", document.getElementById('c2_fluid').value, "", "", document.getElementById('c3_fluid').value, "", "", document.getElementById('c4_fluid').value, "", ""],
+                ["Mode of Operation", document.getElementById('c1_mode').value, "", "", document.getElementById('c2_mode').value, "", "", document.getElementById('c3_mode').value, "", "", document.getElementById('c4_mode').value, "", ""],
+                ["Operating Hours", document.getElementById('c1_hours').value, "", "", document.getElementById('c2_hours').value, "", "", document.getElementById('c3_hours').value, "", "", document.getElementById('c4_hours').value, "", ""],
+                ["Dam Plate Setting", document.getElementById('c1_dam').value, "", "", document.getElementById('c2_dam').value, "", "", document.getElementById('c3_dam').value, "", "", document.getElementById('c4_dam').value, "", ""],
+                ["Bowl / Diff RPM", document.getElementById('c1_rpm').value, "", "", document.getElementById('c2_rpm').value, "", "", document.getElementById('c3_rpm').value, "", "", document.getElementById('c4_rpm').value, "", ""],
+                ["Rate (gpm)", document.getElementById('c1_f_gpm').value, document.getElementById('c1_c_gpm').value, document.getElementById('c1_gpm').innerText, document.getElementById('c2_f_gpm').value, document.getElementById('c2_c_gpm').value, document.getElementById('c2_gpm').innerText, document.getElementById('c3_f_gpm').value, document.getElementById('c3_c_gpm').value, document.getElementById('c3_gpm').innerText, document.getElementById('c4_f_gpm').value, document.getElementById('c4_c_gpm').value, document.getElementById('c4_gpm').innerText],
+                ["Weight (pcf)", document.getElementById('c1_f_pcf').value, document.getElementById('c1_c_pcf').value, document.getElementById('c1_d_pcf').value, document.getElementById('c2_f_pcf').value, document.getElementById('c2_c_pcf').value, document.getElementById('c2_d_pcf').value, document.getElementById('c3_f_pcf').value, document.getElementById('c3_c_pcf').value, document.getElementById('c3_d_pcf').value, document.getElementById('c4_f_pcf').value, document.getElementById('c4_c_pcf').value, document.getElementById('c4_d_pcf').value],
+                ["Weight (ppg)", document.getElementById('c1_f_ppg').value, document.getElementById('c1_c_ppg').value, document.getElementById('c1_d_ppg').value, document.getElementById('c2_f_ppg').value, document.getElementById('c2_c_ppg').value, document.getElementById('c2_d_ppg').value, document.getElementById('c3_f_ppg').value, document.getElementById('c3_c_ppg').value, document.getElementById('c3_d_ppg').value, document.getElementById('c4_f_ppg').value, document.getElementById('c4_c_ppg').value, document.getElementById('c4_d_ppg').value],
+                ["Vol Accounted (bbl)", document.getElementById('c1_f_vol').innerText, document.getElementById('c1_c_vol').innerText, document.getElementById('c1_d_vol').innerText, document.getElementById('c2_f_vol').innerText, document.getElementById('c2_c_vol').innerText, document.getElementById('c2_d_vol').innerText, document.getElementById('c3_f_vol').innerText, document.getElementById('c3_c_vol').innerText, document.getElementById('c3_d_vol').innerText, document.getElementById('c4_f_vol').innerText, document.getElementById('c4_c_vol').innerText, document.getElementById('c4_d_vol').innerText],
+                ["Skips Filled", document.getElementById('c1_skips').value, "", "", document.getElementById('c2_skips').value, "", "", document.getElementById('c3_skips').value, "", "", document.getElementById('c4_skips').value, "", ""],
+                [],
+                ["SECTION 4: RETORT DATA"],
+                ["Parameter", "C1 Feed", "C1 Centrate", "C1 Discard", "C2 Feed", "C2 Centrate", "C2 Discard", "C3 Feed", "C3 Centrate", "C3 Discard", "C4 Feed", "C4 Centrate", "C4 Discard"],
+                ["Retort Oil %", document.getElementById('c1_f_oil').value, document.getElementById('c1_c_oil').value, document.getElementById('c1_d_oil').value, document.getElementById('c2_f_oil').value, document.getElementById('c2_c_oil').value, document.getElementById('c2_d_oil').value, document.getElementById('c3_f_oil').value, document.getElementById('c3_c_oil').value, document.getElementById('c3_d_oil').value, document.getElementById('c4_f_oil').value, document.getElementById('c4_c_oil').value, document.getElementById('c4_d_oil').value],
+                ["Retort Water %", document.getElementById('c1_f_water').value, document.getElementById('c1_c_water').value, document.getElementById('c1_d_water').value, document.getElementById('c2_f_water').value, document.getElementById('c2_c_water').value, document.getElementById('c2_d_water').value, document.getElementById('c3_f_water').value, document.getElementById('c3_c_water').value, document.getElementById('c3_d_water').value, document.getElementById('c4_f_water').value, document.getElementById('c4_c_water').value, document.getElementById('c4_d_water').value],
+                ["Retort Solid %", document.getElementById('c1_f_sol').innerText, document.getElementById('c1_c_sol').innerText, document.getElementById('c1_d_sol').innerText, document.getElementById('c2_f_sol').innerText, document.getElementById('c2_c_sol').innerText, document.getElementById('c2_d_sol').innerText, document.getElementById('c3_f_sol').innerText, document.getElementById('c3_c_sol').innerText, document.getElementById('c3_d_sol').innerText, document.getElementById('c4_f_sol').innerText, document.getElementById('c4_c_sol').innerText, document.getElementById('c4_d_sol').innerText],
+                ["Oil Fraction OWR", document.getElementById('c1_f_owr').value, document.getElementById('c1_c_owr').value, document.getElementById('c1_d_owr').value, document.getElementById('c2_f_owr').value, document.getElementById('c2_c_owr').value, document.getElementById('c2_d_owr').value, document.getElementById('c3_f_owr').value, document.getElementById('c3_c_owr').value, document.getElementById('c3_d_owr').value, document.getElementById('c4_f_owr').value, document.getElementById('c4_c_owr').value, document.getElementById('c4_d_owr').value],
+                [],
+                ["SECTION 4B: SOLIDS MASTER ANALYSIS DATA"],
+                ["Corrected Solids %", document.getElementById('p1_c1_f_ts').innerText, document.getElementById('p1_c1_c_ts').innerText, document.getElementById('p1_c1_d_ts').innerText, document.getElementById('p1_c2_f_ts').innerText, document.getElementById('p1_c2_c_ts').innerText, document.getElementById('p1_c2_d_ts').innerText, document.getElementById('p1_c3_f_ts').innerText, document.getElementById('p1_c3_c_ts').innerText, document.getElementById('p1_c3_d_ts').innerText, document.getElementById('p1_c4_f_ts').innerText, document.getElementById('p1_c4_c_ts').innerText, document.getElementById('p1_c4_d_ts').innerText],
+                ["LGS Vol (ppb)", document.getElementById('p1_c1_f_lgs').innerText, document.getElementById('p1_c1_c_lgs').innerText, document.getElementById('p1_c1_d_lgs').innerText, document.getElementById('p1_c2_f_lgs').innerText, document.getElementById('p1_c2_c_lgs').innerText, document.getElementById('p1_c2_d_lgs').innerText, document.getElementById('p1_c3_f_lgs').innerText, document.getElementById('p1_c3_c_lgs').innerText, document.getElementById('p1_c3_d_lgs').innerText, document.getElementById('p1_c4_f_lgs').innerText, document.getElementById('p1_c4_c_lgs').innerText, document.getElementById('p1_c4_d_lgs').innerText],
+                ["HGS Vol (ppb)", document.getElementById('main_c1_f_hgs').innerText, document.getElementById('main_c1_c_hgs').innerText, document.getElementById('main_c1_d_hgs').innerText, document.getElementById('main_c2_f_hgs').innerText, document.getElementById('main_c2_c_hgs').innerText, document.getElementById('main_c2_d_hgs').innerText, document.getElementById('main_c3_f_hgs').innerText, document.getElementById('main_c3_c_hgs').innerText, document.getElementById('main_c3_d_hgs').innerText, document.getElementById('main_c4_f_hgs').innerText, document.getElementById('main_c4_c_hgs').innerText, document.getElementById('main_c4_d_hgs').innerText],
+                [],
+                ["SECTION 5: VOLUME DISCHARGED BREAKDOWN"],
+                ["Parameter", "Centrifuge #1", "Centrifuge #2", "Centrifuge #3", "Centrifuge #4"],
+                ["Total Mud Lost (bbl)", document.getElementById('b1_mud').innerText, document.getElementById('b2_mud').innerText, document.getElementById('b3_mud').innerText, document.getElementById('b4_mud').innerText],
+                ["Oil Vol Lost (bbl)", document.getElementById('b1_oil').innerText, document.getElementById('b2_oil').innerText, document.getElementById('b3_oil').innerText, document.getElementById('b4_oil').innerText],
+                ["Water Vol Lost (bbl)", document.getElementById('b1_water').innerText, document.getElementById('b2_water').innerText, document.getElementById('b3_water').innerText, document.getElementById('b4_water').innerText],
+                ["Solids Vol Lost (bbl)", document.getElementById('b1_sol').innerText, document.getElementById('b2_sol').innerText, document.getElementById('b3_sol').innerText, document.getElementById('b4_sol').innerText],
+                ["LGS Vol (bbl)", document.getElementById('b1_lgs').innerText, document.getElementById('b2_lgs').innerText, document.getElementById('b3_lgs').innerText, document.getElementById('b4_lgs').innerText],
+                ["HGS Vol (bbl)", document.getElementById('b1_hgs').innerText, document.getElementById('b2_hgs').innerText, document.getElementById('b3_hgs').innerText, document.getElementById('b4_hgs').innerText],
+                ["Skips Discharged", document.getElementById('b1_skips_out').innerText, document.getElementById('b2_skips_out').innerText, document.getElementById('b3_skips_out').innerText, document.getElementById('b4_skips_out').innerText],
+                [],
+                ["SECTION 6: PAGE 2 MASS BALANCE ANALYTICS"],
+                ["Total Solids (bbl)", document.getElementById('m2_c1_f_ts').innerText, document.getElementById('m2_c1_c_ts').innerText, document.getElementById('m2_c1_d_ts').innerText, document.getElementById('m2_c2_f_ts').innerText, document.getElementById('m2_c2_c_ts').innerText, document.getElementById('m2_c2_d_ts').innerText, document.getElementById('m2_c3_f_ts').innerText, document.getElementById('m2_c3_c_ts').innerText, document.getElementById('m2_c3_d_ts').innerText, document.getElementById('m2_c4_f_ts').innerText, document.getElementById('m2_c4_c_ts').innerText, document.getElementById('m2_c4_d_ts').innerText],
+                [],
+                ["SECTION 7: FLOW METRICS BY VOLUME (gpm)"],
+                ["Oil (gpm)", document.getElementById('v_c1_f_oil').innerText, document.getElementById('v_c1_c_oil').innerText, document.getElementById('v_c1_d_oil').innerText, document.getElementById('v_c2_f_oil').innerText, document.getElementById('v_c2_c_oil').innerText, document.getElementById('v_c2_d_oil').innerText, document.getElementById('v_c3_f_oil').innerText, document.getElementById('v_c3_c_oil').innerText, document.getElementById('v_c3_d_oil').innerText, document.getElementById('v_c4_f_oil').innerText, document.getElementById('v_c4_c_oil').innerText, document.getElementById('v_c4_d_oil').innerText],
+                ["Water (gpm)", document.getElementById('v_c1_f_wtr').innerText, document.getElementById('v_c1_c_wtr').innerText, document.getElementById('v_c1_d_wtr').innerText, document.getElementById('v_c2_f_wtr').innerText, document.getElementById('v_c2_c_wtr').innerText, document.getElementById('v_c2_d_wtr').innerText, document.getElementById('v_c3_f_wtr').innerText, document.getElementById('v_c3_c_wtr').innerText, document.getElementById('v_c3_d_wtr').innerText, document.getElementById('v_c4_f_wtr').innerText, document.getElementById('w_c4_c_wtr').innerText, document.getElementById('v_c4_d_wtr').innerText],
+                [],
+                ["SECTION 8: FLOW METRICS BY WEIGHT (kg/min)"],
+                ["Oil (kg/min)", document.getElementById('w_c1_f_oil').innerText, document.getElementById('w_c1_c_oil').innerText, document.getElementById('w_c1_d_oil').innerText, document.getElementById('w_c2_f_oil').innerText, document.getElementById('w_c2_c_oil').innerText, document.getElementById('w_c2_d_oil').innerText, document.getElementById('w_c3_f_oil').innerText, document.getElementById('w_c3_c_oil').innerText, document.getElementById('w_c3_d_oil').innerText, document.getElementById('w_c4_f_oil').innerText, document.getElementById('w_c4_c_oil').innerText, document.getElementById('w_c4_d_oil').innerText],
+                ["Water (kg/min)", document.getElementById('w_c1_f_wtr').innerText, document.getElementById('w_c1_c_wtr').innerText, document.getElementById('w_c1_d_wtr').innerText, document.getElementById('w_c2_f_wtr').innerText, document.getElementById('w_c2_c_wtr').innerText, document.getElementById('w_c2_d_wtr').innerText, document.getElementById('w_c3_f_wtr').innerText, document.getElementById('w_c3_c_wtr').innerText, document.getElementById('w_c3_d_wtr').innerText, document.getElementById('w_c4_f_wtr').innerText, document.getElementById('w_c4_c_wtr').innerText, document.getElementById('w_c4_d_wtr').innerText],
+                [],
+                ["SECTION 9: SYSTEM EFFICIENCIES"],
+                ["Dual HGS Recovered %", document.getElementById('eff_dual_hgs').innerText, "Dual LGS Discard %", document.getElementById('eff_dual_lgs').innerText],
+                ["Indiv HGS Recovered %", document.getElementById('eff_ind_hgs').innerText, "Indiv LGS Discard %", document.getElementById('eff_ind_lgs').innerText],
+                ["Solids Removal Mode HGS Discard %", document.getElementById('sol_rem_hgs').innerText, "Solids Removal Mode LGS Discard %", document.getElementById('sol_rem_lgs').innerText],
+                [],
+                ["COMMENTS / ANNOTATIONS"],
+                [document.getElementById('comments').value]
+            ];
+        }
+
+        function exportCSV() {
+            const data = gatherDataset();
+            const csvString = "data:text/csv;charset=utf-8," + data.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", encodeURI(csvString));
+            dlAnchor.setAttribute("download", `Solids_Control_System_Report_No_${document.getElementById('report_num').value}.csv`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        // Run system calculations on initialization loop
+        window.onload = function() {
+            calculateReport();
+            renderHistoryTable();
+        };
+    </script>
+</body>
+</html>
